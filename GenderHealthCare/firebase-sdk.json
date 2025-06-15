@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "genderhealthcare-fe47b",
+  "private_key_id": "33ce21f3479f9a82cd7524a9404de3ef1949f1cf",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCdvxPtSY2QyJfy\nqglZtuvIQB/i7fzB42+vxvGhiHrW762GwRWIjdmi97wnw8C9hUcj9IbTi6Yr1RRJ\nc2uigLW2lgLOg5aoxfq1u5zOUl7ANT5vy3Chcb8gMFzZ8M7UAKA6ZoQUp5EkB7rx\ney7x81maZud3F30ODSswL/PVPzQYkW3iv0Kua/7WD4w53xYIlkVUaqnjWf3bnr3z\nX+og+J7RDy1B7V0Vfm0YlEuxZVUJaRTQeyCqqCqy312pTzWg0/USOGQR/HcBSnLv\n9x3InMrSs9X/tw9X1YFjz6CzHDuCjOpLnNapiBQlcvN3fxJei+1vVHEePZmYUfLX\nuKQeSv4nAgMBAAECggEADiLEKt83UpJJ3Ng0QU1dNf3aaFAHoT+melvQuwx2EZJl\n0Zhg5nKWXlO75oZUsccNN8we/uWvQj30dPE6Y9QL30JJxcQl+UF7NNOMpYfdGh/1\n/zeoWVdOQhiuDBECanNp6FctHoVg7MJ36VGEGfDC2/gSZZTTGIdr54QMjNSpRaAy\nkqDnf2upVc6n6Q+9cQGy/vaJBhglE5z04COTx2MZHZew9Iw5AbZ+LDjH2E0RVhNy\n/5ZlHB43vouYBJiMBkxMiHV7zoM8hUG72KN/iy+HZmM3yNVd7dxW+fAE74s27jug\nUdWz6/hUdQa5kqrueOTOXljMVCxOMvs6qU+ESt3asQKBgQDS4zZ5U76AvM29rrJQ\nAy8vdC1bMPMLpt2SEV2W7BCUXx3W25Wp3dxpRCj/VbGG9Fx77hnqCOUnrYPlYFCH\nGuxePnP/PeGGP9cE2bDF5bPMkGQBNmqPOWb7nxzCLt1+XDNy2gLB+WHOtj0MznGV\nXLvt7+TVivPuCbqAoltU+t9+FwKBgQC/fbVJd5mw+jpuNq6+8QDhSplbT4nn0f3S\nJcXLvkttV/4zrxv20IT7O6pVpY5KE5dMkBtz4h+ap1jJSjZqDJBDS+bn7z0McXc3\nyTiCiB149J0jh8hsmEyWTl9TgOsasKygtg9SKGIPD71EYnyWVWKeMJSm6tr2hwn9\nFDTD85oacQKBgEMVEavwbqXm6Q9Qddor2SOgMhlS7c0kDFE9gubSOsfnpcdF3ErH\njyhRDTWDndAPBShK6iVfJP3FHTKmu5bugofMF/v2RDn/LreVQ7z/v3zv5U/ZbnYW\nzWJ3D5/ZZo2eaKM9JClt2aX2pF7hgJIBiKo8aC9hXwy2PYRToPfcQaGLAoGASf/c\nRM3RONEaL2k2Uld0DZv0c5LjKhC+U62BKGEbaN/uPi7XUaP3H9dI1dwqhnnXqCCw\nWzHxIKS27OKe8JB2V2tHii2rm9llRsud6OOM8CcnaomYbE7Wmecjc3OIZ0ILE/gH\nJ6qvaj6c14ZvuvC4MYV4jKCJiWdZ9tEOKwNCdCECgYEAzwxAEhoqkGqOKAVL3tKv\nzuKow2qAYtFK8XRqxqMtTvlSpoTGh1Q3vI42jansrncPV7f98GpfnU2hyWEbokX1\nPXsSfkopD5QpX+BilEnDLA+lpbNvlahiSUQnCAptt9EjRhp076ZyI9OSf+Mvf30W\nn7f/VA0//V/bvYRk3/ED01Q=\n-----END PRIVATE KEY-----\n",
+  "client_email": "firebase-adminsdk-fbsvc@genderhealthcare-fe47b.iam.gserviceaccount.com",
+  "client_id": "105177480193727854774",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40genderhealthcare-fe47b.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

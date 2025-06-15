@@ -1,0 +1,17 @@
+﻿using GenderHealthCare.Core.Models;
+
+namespace GenderHealthCare.Entity
+{
+    public class ReproductiveCycle : BaseEntity
+    {
+        public DateTime StartDate { get; set; }
+        public DateTime EndDate { get; set; }
+        public int CycleLength { get; set; }
+        public int PeriodLength { get; set; }
+        public string? Notes { get; set; }
+        public string UserId { get; set; }
+
+        public User User { get; set; }
+        public ICollection<CycleNotification> Notifications { get; set; }
+    }
+}

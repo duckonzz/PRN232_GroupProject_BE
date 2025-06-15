@@ -1,0 +1,85 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenderHealthCare", "GenderHealthCare\GenderHealthCare.csproj", "{AAFF220F-21B1-4D94-8F3C-ED92610E3C2D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "1.Controllers", "1.Controllers", "{29CDF928-1AF6-4125-BDA8-738A02CD0D68}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "2.Services", "2.Services", "{AF03AE64-3C6F-42EF-8C85-54ED88F8291F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3.Repositories", "3.Repositories", "{04BBDCE0-DDFB-431B-B6DA-A1D15FA8E974}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "4.Core", "4.Core", "{9C7F4780-A3E4-4241-B54A-9A9B65099708}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenderHealthCare.Contract.Repositories", "GenderHealthCare.Contract.Repositories\GenderHealthCare.Contract.Repositories.csproj", "{772E1704-0943-42FD-9A4D-8FA8880E2998}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenderHealthCare.Entity", "GenderHealthCare.Entity\GenderHealthCare.Entity.csproj", "{5EC05521-C132-46AD-B7B5-5CD5EAF77FEB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenderHealthCare.Repositories", "GenderHealthCare.Repositories\GenderHealthCare.Repositories.csproj", "{EA15D519-7FAA-4D48-9990-68C3F2301E22}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenderHealthCare.Contract.Services", "GenderHealthCare.Contract.Services\GenderHealthCare.Contract.Services.csproj", "{0B491FCC-1D66-49B4-BB17-607133ADDBAA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenderHealthCare.Services", "GenderHealthCare.Services\GenderHealthCare.Services.csproj", "{5DD8030E-1741-49BE-9D21-A52CFB2870FD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenderHealthCare.ModelViews", "GenderHealthCare.ModelViews\GenderHealthCare.ModelViews.csproj", "{8A570B8C-6756-40D7-A0CC-0702CB5C00C8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenderHealthCare.Core", "GenderHealthCare.Core\GenderHealthCare.Core.csproj", "{3AE282D8-97AE-4CDA-BF72-6A5478F2AE54}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AAFF220F-21B1-4D94-8F3C-ED92610E3C2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAFF220F-21B1-4D94-8F3C-ED92610E3C2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAFF220F-21B1-4D94-8F3C-ED92610E3C2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAFF220F-21B1-4D94-8F3C-ED92610E3C2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{772E1704-0943-42FD-9A4D-8FA8880E2998}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{772E1704-0943-42FD-9A4D-8FA8880E2998}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{772E1704-0943-42FD-9A4D-8FA8880E2998}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{772E1704-0943-42FD-9A4D-8FA8880E2998}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5EC05521-C132-46AD-B7B5-5CD5EAF77FEB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EC05521-C132-46AD-B7B5-5CD5EAF77FEB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EC05521-C132-46AD-B7B5-5CD5EAF77FEB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EC05521-C132-46AD-B7B5-5CD5EAF77FEB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA15D519-7FAA-4D48-9990-68C3F2301E22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA15D519-7FAA-4D48-9990-68C3F2301E22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA15D519-7FAA-4D48-9990-68C3F2301E22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA15D519-7FAA-4D48-9990-68C3F2301E22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B491FCC-1D66-49B4-BB17-607133ADDBAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B491FCC-1D66-49B4-BB17-607133ADDBAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B491FCC-1D66-49B4-BB17-607133ADDBAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B491FCC-1D66-49B4-BB17-607133ADDBAA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DD8030E-1741-49BE-9D21-A52CFB2870FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DD8030E-1741-49BE-9D21-A52CFB2870FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DD8030E-1741-49BE-9D21-A52CFB2870FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DD8030E-1741-49BE-9D21-A52CFB2870FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A570B8C-6756-40D7-A0CC-0702CB5C00C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A570B8C-6756-40D7-A0CC-0702CB5C00C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A570B8C-6756-40D7-A0CC-0702CB5C00C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A570B8C-6756-40D7-A0CC-0702CB5C00C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3AE282D8-97AE-4CDA-BF72-6A5478F2AE54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3AE282D8-97AE-4CDA-BF72-6A5478F2AE54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3AE282D8-97AE-4CDA-BF72-6A5478F2AE54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3AE282D8-97AE-4CDA-BF72-6A5478F2AE54}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{AAFF220F-21B1-4D94-8F3C-ED92610E3C2D} = {29CDF928-1AF6-4125-BDA8-738A02CD0D68}
+		{772E1704-0943-42FD-9A4D-8FA8880E2998} = {04BBDCE0-DDFB-431B-B6DA-A1D15FA8E974}
+		{5EC05521-C132-46AD-B7B5-5CD5EAF77FEB} = {04BBDCE0-DDFB-431B-B6DA-A1D15FA8E974}
+		{EA15D519-7FAA-4D48-9990-68C3F2301E22} = {04BBDCE0-DDFB-431B-B6DA-A1D15FA8E974}
+		{0B491FCC-1D66-49B4-BB17-607133ADDBAA} = {AF03AE64-3C6F-42EF-8C85-54ED88F8291F}
+		{5DD8030E-1741-49BE-9D21-A52CFB2870FD} = {AF03AE64-3C6F-42EF-8C85-54ED88F8291F}
+		{8A570B8C-6756-40D7-A0CC-0702CB5C00C8} = {AF03AE64-3C6F-42EF-8C85-54ED88F8291F}
+		{3AE282D8-97AE-4CDA-BF72-6A5478F2AE54} = {9C7F4780-A3E4-4241-B54A-9A9B65099708}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {B1F399BA-54EF-4732-B427-435CFA537D02}
+	EndGlobalSection
+EndGlobal
