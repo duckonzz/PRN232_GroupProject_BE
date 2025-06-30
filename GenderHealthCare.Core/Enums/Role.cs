@@ -1,6 +1,6 @@
 ﻿namespace GenderHealthCare.Core.Enums
 {
-    public enum UserRole
+    public enum Role
     {
         Customer = 1,
         Consultant = 2,

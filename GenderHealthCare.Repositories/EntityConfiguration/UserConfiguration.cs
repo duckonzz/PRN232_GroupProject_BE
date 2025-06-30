@@ -22,6 +22,10 @@ namespace GenderHealthCare.Repositories.EntityConfiguration
                    .IsRequired()
                    .HasMaxLength(100);
 
+            builder.Property(x => x.PasswordHash)
+                   .IsRequired()
+                   .HasMaxLength(255);
+
             builder.Property(x => x.PhoneNumber)
                    .HasMaxLength(20);
 
@@ -35,6 +39,10 @@ namespace GenderHealthCare.Repositories.EntityConfiguration
                    .IsRequired()
                    .HasMaxLength(20)
                    .HasComment("Customer / Consultant / Staff / Manager / Admin");
+
+            builder.Property(x => x.ConsultantStatus)
+                   .HasMaxLength(20)
+                   .HasDefaultValue(null);
 
             builder.Property(x => x.IsCycleTrackingOn)
                    .HasDefaultValue(false);

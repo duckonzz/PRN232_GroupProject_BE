@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GenderHealthCare.Services.Infrastructure
+namespace GenderHealthCare.Services.Services
 {
     public class ConsultantService : IConsultantService
     {
@@ -90,7 +90,7 @@ namespace GenderHealthCare.Services.Infrastructure
 
         /* ---------- Get & Search ---------- */
         public async Task<ConsultantDto?> GetByIdAsync(string id)
-            => (await repo.GetByIdAsync(id)) is { } c ? ToDto(c) : null;
+            => await repo.GetByIdAsync(id) is { } c ? ToDto(c) : null;
 
         public async Task<PaginatedList<ConsultantDto>> GetAllAsync(int page, int size)
         {
