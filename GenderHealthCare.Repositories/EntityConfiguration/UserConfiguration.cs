@@ -22,6 +22,10 @@ namespace GenderHealthCare.Repositories.EntityConfiguration
                    .IsRequired()
                    .HasMaxLength(100);
 
+            builder.Property(x => x.PasswordHash)
+                   .IsRequired()
+                   .HasMaxLength(255);
+
             builder.Property(x => x.PhoneNumber)
                    .HasMaxLength(20);
 

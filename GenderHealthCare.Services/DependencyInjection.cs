@@ -3,7 +3,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using GenderHealthCare.Contract.Repositories.Interfaces;
 using GenderHealthCare.Repositories.Repositories;
-using System.Reflection;
+using GenderHealthCare.Services.Validators;
+using GenderHealthCare.Contract.Services.Interfaces;
+using GenderHealthCare.Services.Services;
+using GenderHealthCare.Services.Infrastructure;
 
 
 namespace GenderHealthCare.Services
@@ -18,7 +21,10 @@ namespace GenderHealthCare.Services
         }
         public static void AddServices(this IServiceCollection services, IConfiguration configuration)
         {
-
+            services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
+            services.AddScoped<IUserContextService, UserContextService>();
+            services.AddScoped<JwtTokenGenerator>();
         }
         public static void AddRepository(this IServiceCollection services)
         {
@@ -27,6 +33,7 @@ namespace GenderHealthCare.Services
 
         public static void AddValidators(this IServiceCollection services)
         {
+            services.AddValidatorsFromAssemblyContaining<UserRegistrationRequestValidator>();
         }
     }
 }
