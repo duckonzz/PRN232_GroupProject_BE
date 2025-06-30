@@ -40,6 +40,10 @@ namespace GenderHealthCare.Repositories.EntityConfiguration
                    .HasMaxLength(20)
                    .HasComment("Customer / Consultant / Staff / Manager / Admin");
 
+            builder.Property(x => x.ConsultantStatus)
+                   .HasMaxLength(20)
+                   .HasDefaultValue(null);
+
             builder.Property(x => x.IsCycleTrackingOn)
                    .HasDefaultValue(false);
 

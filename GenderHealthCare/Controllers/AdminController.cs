@@ -19,12 +19,13 @@ namespace GenderHealthCare.Controllers
         {
             _authenticationService = authenticationService;
         }
+
         /// <summary>
         /// Retrieves a paginated list of users with optional filters.
         /// </summary>
         /// <param name="query">Query filters and pagination parameters.</param>
         /// <returns>Paginated user list.</returns>
-        [HttpGet]
+        [HttpGet("users")]
         public async Task<IActionResult> GetAllUsers([FromQuery] UserQueryObject query)
         {
             if (query.Role.HasValue && !Enum.IsDefined(typeof(Role), query.Role.Value))
@@ -94,6 +95,31 @@ namespace GenderHealthCare.Controllers
         {
             var result = await _authenticationService.UpdateUserRoleAsync(id, request.NewRole);
             return Ok(BaseResponseModel<UserResponseModel>.OkDataResponse(result, "User role updated successfully"));
+        }
+
+        /// <summary>
+        /// Approve a consultant registration request.
+        /// </summary>
+        /// <param name="userId">The ID of the user who requested to become a consultant.</param>
+        /// <returns>A success message indicating the consultant has been approved.</returns>
+        [HttpPut("{userId}/approve")]
+        public async Task<IActionResult> ApproveClinic(string userId)
+        {
+            await _authenticationService.ApproveConsultantAsync(userId);
+            return Ok(BaseResponse.OkMessageResponse("Consultant approved successfully"));
+        }
+
+
+        /// <summary>
+        /// Reject a consultant registration request.
+        /// </summary>
+        /// <param name="userId">The ID of the user who requested to become a consultant.</param>
+        /// <returns>A success message indicating the consultant request has been rejected.</returns>
+        [HttpPut("{userId}/reject")]
+        public async Task<IActionResult> RejectClinic(string userId)
+        {
+            await _authenticationService.RejectConsultantAsync(userId);
+            return Ok(BaseResponse.OkMessageResponse("Consultant rejected successfully"));
         }
     }
 }

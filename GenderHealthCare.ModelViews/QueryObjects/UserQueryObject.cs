@@ -10,5 +10,6 @@ namespace GenderHealthCare.ModelViews.QueryObjects
         public string? PhoneNumber { get; set; }
         public bool? IsCycleTrackingOn { get; set; }
         public Role? Role { get; set; }
+        public ConsultantStatus? ConsultantStatus { get; set; }
     }
 }

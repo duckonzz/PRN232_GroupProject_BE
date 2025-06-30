@@ -10,5 +10,6 @@
         public string Role { get; set; }
         public bool IsCycleTrackingOn { get; set; }
         public DateTimeOffset CreatedTime { get; set; }
+        public bool HasConsultantProfile { get; set; }
     }
 }

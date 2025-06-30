@@ -34,6 +34,7 @@ namespace GenderHealthCare.Services
         public static void AddValidators(this IServiceCollection services)
         {
             services.AddValidatorsFromAssemblyContaining<UserRegistrationRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<UpdateUserRequestValidator>();
         }
     }
 }

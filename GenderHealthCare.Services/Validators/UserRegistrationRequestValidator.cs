@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using GenderHealthCare.Core.Enums;
 using GenderHealthCare.Core.Helpers;
 using GenderHealthCare.ModelViews.AuthenticationModels;
 
@@ -41,7 +42,8 @@ namespace GenderHealthCare.Services.Validators
                 .IsInEnum().WithMessage("Gender is invalid");
 
             RuleFor(x => x.Role)
-                .IsInEnum().WithMessage("Role is invalid");
+                .Must(r => r == Role.Customer || r == Role.Consultant)
+                .WithMessage("Role must be Customer or Consultant.");
         }
     }
 }

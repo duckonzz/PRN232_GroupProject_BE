@@ -17,6 +17,7 @@ namespace GenderHealthCare.Services.Mapping
                 Role = userModel.Role,
                 IsCycleTrackingOn = userModel.IsCycleTrackingOn,
                 CreatedTime = userModel.CreatedTime,
+                HasConsultantProfile = userModel.ConsultantProfile != null
             };
         }
 
