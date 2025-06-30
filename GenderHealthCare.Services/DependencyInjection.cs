@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 using GenderHealthCare.Contract.Repositories.Interfaces;
 using GenderHealthCare.Repositories.Repositories;
 using System.Reflection;
+using GenderHealthCare.Contract.Services.Interfaces;
+using GenderHealthCare.Services.Infrastructure;
 
 
 namespace GenderHealthCare.Services
@@ -18,11 +20,12 @@ namespace GenderHealthCare.Services
         }
         public static void AddServices(this IServiceCollection services, IConfiguration configuration)
         {
-
+            services.AddScoped<IConsultantService, ConsultantService>();
         }
         public static void AddRepository(this IServiceCollection services)
         {
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<IConsultantRepository, ConsultantRepository>();
         }
 
         public static void AddValidators(this IServiceCollection services)
