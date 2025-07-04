@@ -1,4 +1,5 @@
-﻿using GenderHealthCare.Contract.Repositories.Interfaces;
+﻿using AutoMapper;
+using GenderHealthCare.Contract.Repositories.Interfaces;
 using GenderHealthCare.Contract.Repositories.PaggingItems;
 using GenderHealthCare.Contract.Services.Interfaces;
 using GenderHealthCare.Entity;
@@ -14,108 +15,79 @@ namespace GenderHealthCare.Services.Services
 {
     public class ConsultantService : IConsultantService
     {
-        private readonly IConsultantRepository repo;
-        public ConsultantService(IConsultantRepository repo) => this.repo = repo;
+        private readonly IConsultantRepository _repo;
+        private readonly IPasswordHasher _hasher;
+        private readonly IMapper _mapper;
 
-        /* ---------- Mapper ---------- */
-        private static ConsultantDto ToDto(Consultant c) => new()
+        public ConsultantService(IConsultantRepository repo,
+                                 IPasswordHasher hasher,
+                                 IMapper mapper)
         {
-            Id = c.Id,
-            Degree = c.Degree,
-            ExperienceYears = c.ExperienceYears,
-            Bio = c.Bio,
-            FullName = c.User.FullName,
-            Email = c.User.Email,
-            PhoneNumber = c.User.PhoneNumber,
-            DateOfBirth = c.User.DateOfBirth,
-            Gender = c.User.Gender,
-            Role = c.User.Role,
-            IsCycleTrackingOn = c.User.IsCycleTrackingOn
-        };
+            _repo = repo;
+            _hasher = hasher;
+            _mapper = mapper;
+        }
 
-        /* ---------- CRUD ---------- */
+        /* ---------- CREATE ---------- */
         public async Task<string> CreateAsync(CreateConsultantDto dto)
         {
-            var entity = new Consultant
-            {
-                Degree = dto.Degree,
-                ExperienceYears = dto.ExperienceYears,
-                Bio = dto.Bio,
-                User = new User
-                {
-                    FullName = dto.FullName,
-                    Email = dto.Email,
-                    PhoneNumber = dto.PhoneNumber,
-                    DateOfBirth = dto.DateOfBirth,
-                    Gender = dto.Gender,
-                    Role = dto.Role,
-                    IsCycleTrackingOn = dto.IsCycleTrackingOn
-                }
-            };
-            await repo.AddAsync(entity);
-            await repo.SaveChangesAsync();
-            return entity.Id;
+            var consultant = _mapper.Map<Consultant>(dto);
+            consultant.User.PasswordHash = _hasher.HashPassword(dto.Password);
+
+            await _repo.AddAsync(consultant);
+            await _repo.SaveChangesAsync();
+            return consultant.Id;
         }
 
+        /* ---------- UPDATE ---------- */
         public async Task UpdateAsync(string id, UpdateConsultantDto dto)
         {
-            var c = await repo.GetByIdAsync(id)
-                     ?? throw new KeyNotFoundException("Consultant not found");
+            var consultant = await _repo.Query()               // Include User
+                                        .Include(c => c.User)
+                                        .FirstOrDefaultAsync(c => c.Id == id)
+                           ?? throw new KeyNotFoundException("Consultant not found");
 
-            // Consultant
-            c.Degree = dto.Degree;
-            c.ExperienceYears = dto.ExperienceYears;
-            c.Bio = dto.Bio;
+            _mapper.Map(dto, consultant);          // map into Consultant
+            _mapper.Map(dto, consultant.User);     // map into nested User
 
-            // User
-            var u = c.User;
-            u.FullName = dto.FullName;
-            u.PhoneNumber = dto.PhoneNumber;
-            u.DateOfBirth = dto.DateOfBirth;
-            u.Gender = dto.Gender;
-            u.Role = dto.Role;
-            u.IsCycleTrackingOn = dto.IsCycleTrackingOn;
+            if (!string.IsNullOrWhiteSpace(dto.NewPassword))
+                consultant.User.PasswordHash = _hasher.HashPassword(dto.NewPassword);
 
-            repo.Update(c);
-            await repo.SaveChangesAsync();
+            await _repo.SaveChangesAsync();
         }
 
+        /* ---------- DELETE ---------- */
         public async Task DeleteAsync(string id)
         {
-            var c = await repo.GetByIdAsync(id)
+            var c = await _repo.GetByIdAsync(id)
                      ?? throw new KeyNotFoundException("Consultant not found");
-            repo.Delete(c);
-            await repo.SaveChangesAsync();
+            _repo.Delete(c);
+            await _repo.SaveChangesAsync();
         }
 
-        /* ---------- Get & Search ---------- */
+        /* ---------- READ ---------- */
         public async Task<ConsultantDto?> GetByIdAsync(string id)
-            => await repo.GetByIdAsync(id) is { } c ? ToDto(c) : null;
+        {
+            var entity = await _repo.Query()
+                                    .Include(c => c.User)
+                                    .FirstOrDefaultAsync(c => c.Id == id);
+            return entity is null ? null : _mapper.Map<ConsultantDto>(entity);
+        }
 
         public async Task<PaginatedList<ConsultantDto>> GetAllAsync(int page, int size)
         {
-            var q = repo.Query().OrderBy(c => c.User.FullName);
+            var q = _repo.Query().Include(c => c.User)
+                                      .OrderBy(c => c.User.FullName);
             var paged = await PaginatedList<Consultant>.CreateAsync(q, page, size);
-            var dto = paged.Items.Select(ToDto).ToList();
-            return new PaginatedList<ConsultantDto>(dto, paged.TotalCount, page, size);
+            var dtoLst = paged.Items.Select(_mapper.Map<ConsultantDto>).ToList();
+            return new PaginatedList<ConsultantDto>(dtoLst, paged.TotalCount, page, size);
         }
 
         public async Task<PaginatedList<ConsultantDto>> SearchAsync(
             string? degree, string? email, int? expYears, int page, int size)
         {
-            var q = repo.Query();
-
-            if (!string.IsNullOrWhiteSpace(degree))
-                q = q.Where(c => EF.Functions.Like(c.Degree, $"%{degree}%"));
-
-            if (!string.IsNullOrWhiteSpace(email))
-                q = q.Where(c => EF.Functions.Like(c.User.Email, $"%{email}%"));
-
-            if (expYears.HasValue)
-                q = q.Where(c => c.ExperienceYears == expYears.Value);
-
-            var paged = await PaginatedList<Consultant>.CreateAsync(q, page, size);
-            var dto = paged.Items.Select(ToDto).ToList();
+            var paged = await _repo.SearchAsync(degree, email, expYears, page, size);
+            var dto = paged.Items.Select(_mapper.Map<ConsultantDto>).ToList();
             return new PaginatedList<ConsultantDto>(dto, paged.TotalCount, page, size);
         }
     }

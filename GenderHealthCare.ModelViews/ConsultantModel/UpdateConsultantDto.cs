@@ -15,6 +15,7 @@ namespace GenderHealthCare.ModelViews.ConsultantModel
         public string? Gender { get; set; }
         public string Role { get; set; }
         public bool IsCycleTrackingOn { get; set; }
+        public string? NewPassword { get; set; }
 
         // ----- Consultant -----
         public string Degree { get; set; }

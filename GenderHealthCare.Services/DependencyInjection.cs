@@ -28,11 +28,14 @@ namespace GenderHealthCare.Services
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             services.AddScoped<IUserContextService, UserContextService>();
             services.AddScoped<JwtTokenGenerator>();
+            services.AddScoped<IConsultantScheduleService, ConsultantScheduleService>();
+
         }
         public static void AddRepository(this IServiceCollection services)
         {
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IConsultantRepository, ConsultantRepository>();
+            services.AddScoped<IConsultantScheduleRepository, ConsultantScheduleRepository>();
         }
 
         public static void AddValidators(this IServiceCollection services)
