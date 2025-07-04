@@ -2,6 +2,8 @@
 using GenderHealthCare.Entity;
 using GenderHealthCare.ModelViews.ConsultantModel;
 using GenderHealthCare.ModelViews.ConsultantScheduleModel;
+using GenderHealthCare.ModelViews.TestBookingModel;
+using GenderHealthCare.ModelViews.TestSlotModel;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -59,6 +61,15 @@ namespace GenderHealthCare.Services.Mapping
                 .ForMember(d => d.PasswordHash, o => o.Ignore())
                 .ForAllMembers(opt => opt.Condition(
                     (src, dest, srcMember) => srcMember != null));
+
+
+            CreateMap<TestSlot, TestSlotDto>();
+            CreateMap<CreateTestSlotDto, TestSlot>();
+            CreateMap<UpdateTestSlotDto, TestSlot>();
+
+            CreateMap<TestBooking, TestBookingDto>();
+            CreateMap<CreateTestBookingDto, TestBooking>();
+            CreateMap<UpdateTestBookingDto, TestBooking>();
 
         }
     }

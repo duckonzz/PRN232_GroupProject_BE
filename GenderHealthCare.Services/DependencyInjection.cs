@@ -29,6 +29,8 @@ namespace GenderHealthCare.Services
             services.AddScoped<IUserContextService, UserContextService>();
             services.AddScoped<JwtTokenGenerator>();
             services.AddScoped<IConsultantScheduleService, ConsultantScheduleService>();
+            services.AddScoped<ITestSlotService, TestSlotService>();
+            services.AddScoped<ITestBookingService, TestBookingService>();
 
         }
         public static void AddRepository(this IServiceCollection services)
@@ -36,6 +38,8 @@ namespace GenderHealthCare.Services
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IConsultantRepository, ConsultantRepository>();
             services.AddScoped<IConsultantScheduleRepository, ConsultantScheduleRepository>();
+            services.AddScoped<ITestSlotRepository, TestSlotRepository>();
+            services.AddScoped<ITestBookingRepository, TestBookingRepository>();
         }
 
         public static void AddValidators(this IServiceCollection services)
