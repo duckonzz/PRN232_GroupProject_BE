@@ -11,6 +11,7 @@ using GenderHealthCare.Repositories.Base;
 using GenderHealthCare.Repositories.SeedData;
 using System.Text;
 using GenderHealthCare.Core.Helpers;
+using GenderHealthCare.Services.BackgroundJobs;
 
 namespace GenderHealthCare.DI
 {
@@ -25,6 +26,8 @@ namespace GenderHealthCare.DI
             services.ConfigCors();
             services.InitSeedData();
             services.AddFirebase();
+            services.AddBackgroundServices();
+            services.Configure<EmailSettings>(configuration.GetSection("EmailSettings"));
         }
         public static void AddDatabase(this IServiceCollection services, IConfiguration configuration)
         {
@@ -223,6 +226,12 @@ namespace GenderHealthCare.DI
                 });
             });
         }
+
+        public static void AddBackgroundServices(this IServiceCollection services)
+        {
+            services.AddHostedService<CycleNotificationBackgroundService>();
+        }
+
         public static void InitSeedData(this IServiceCollection services)
         {
             using var scope = services.BuildServiceProvider().CreateScope();

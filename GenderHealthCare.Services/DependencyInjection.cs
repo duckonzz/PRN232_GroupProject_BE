@@ -9,6 +9,7 @@ using GenderHealthCare.Services.Validators;
 using GenderHealthCare.Contract.Services.Interfaces;
 using GenderHealthCare.Services.Services;
 using GenderHealthCare.Services.Infrastructure;
+using GenderHealthCare.Services.Infrastructure.Emailing;
 
 
 namespace GenderHealthCare.Services
@@ -25,13 +26,15 @@ namespace GenderHealthCare.Services
         {
             services.AddScoped<IConsultantService, ConsultantService>();
             services.AddScoped<IAuthenticationService, AuthenticationService>();
+            services.AddScoped<ICycleTrackingService, CycleTrackingService>();
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             services.AddScoped<IUserContextService, UserContextService>();
+            services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<JwtTokenGenerator>();
+            services.AddScoped<IEmailTemplateBuilder, EmailTemplateBuilder>();
             services.AddScoped<IConsultantScheduleService, ConsultantScheduleService>();
             services.AddScoped<ITestSlotService, TestSlotService>();
             services.AddScoped<ITestBookingService, TestBookingService>();
-
         }
         public static void AddRepository(this IServiceCollection services)
         {
@@ -46,6 +49,8 @@ namespace GenderHealthCare.Services
         {
             services.AddValidatorsFromAssemblyContaining<UserRegistrationRequestValidator>();
             services.AddValidatorsFromAssemblyContaining<UpdateUserRequestValidator>();
+
+            services.AddValidatorsFromAssemblyContaining<CycleTrackingRequestValidator>();
         }
     }
 }

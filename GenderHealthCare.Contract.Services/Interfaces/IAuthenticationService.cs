@@ -10,7 +10,7 @@ namespace GenderHealthCare.Contract.Services.Interfaces
         Task<UserResponseModel> GetInfoAsync(string userId);
         Task<BasePaginatedList<UserResponseModel>> GetPagedUsersAsync(UserQueryObject query);
         Task<UserResponseModel> GetUserByIdAsync(string id);
-        Task SetPasswordAsync(string userId, SetPasswordRequest request);
+        Task ChangePasswordAsync(string userId, ChangePasswordRequest request);
         // Register & Login (Password)
         Task<UserResponseModel> RegisterAsync(UserRegistrationRequest request);
         Task<AuthenticationModel> LoginWithEmailPasswordAsync(LoginRequest request);

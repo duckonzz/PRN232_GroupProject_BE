@@ -132,6 +132,15 @@ namespace GenderHealthCare.Repositories.Repositories
             Task.WaitAll(Task.FromResult(0));
         }
 
+        public void UpdateRange(IEnumerable<T> entities)
+        {
+            foreach (var entity in entities)
+            {
+                _dbSet.Attach(entity);
+                _context.Entry(entity).State = EntityState.Modified;
+            }
+        }
+
         public async Task<IEnumerable<T>> GetAllAsync()
         {
             return await _dbSet.ToListAsync();

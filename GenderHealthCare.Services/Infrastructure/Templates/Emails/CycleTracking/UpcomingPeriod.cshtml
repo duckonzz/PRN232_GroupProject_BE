@@ -1,0 +1,24 @@
+﻿@model dynamic
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Thông báo kỳ kinh sắp tới</title>
+</head>
+<body style="font-family: 'Segoe UI', sans-serif; background-color: #fff0f5; margin: 0; padding: 20px;">
+    <div style="max-width: 600px; margin: auto; background-color: white; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.05); padding: 24px;">
+        <h2 style="color: #d63384; margin-bottom: 12px;">🔔 Nhắc kỳ kinh sắp đến</h2>
+        <p>Xin chào <strong>@Model.FullName</strong>,</p>
+
+        <p>Kỳ kinh nguyệt tiếp theo của bạn sẽ bắt đầu trong <strong>3 ngày nữa</strong>.</p>
+
+        <p style="margin: 20px 0;"><strong>📅 Dự kiến:</strong> @Model.NotificationDate.ToString("dd/MM/yyyy")</p>
+
+        <p style="margin-top: 24px;">💖 Hãy chăm sóc bản thân và lắng nghe cơ thể nhé!</p>
+
+        <hr style="margin-top: 30px;">
+        <p style="font-size: 12px; color: #6c757d;">Email này được gửi từ hệ thống <strong>Gender Healthcare</strong>.</p>
+    </div>
+</body>
+</html>

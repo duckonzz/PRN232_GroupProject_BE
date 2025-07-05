@@ -12,12 +12,14 @@
 		<PackageReference Include="FirebaseAdmin" Version="3.0.0" />
 		<PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
 		<PackageReference Include="Google.Apis.Auth" Version="1.69.0" />
+		<PackageReference Include="MailKit" Version="4.13.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+		<PackageReference Include="RazorLight" Version="2.3.1" />
 	</ItemGroup>
 
 
@@ -29,5 +31,12 @@
 	  <ProjectReference Include="..\GenderHealthCare.ModelViews\GenderHealthCare.ModelViews.csproj" />
 	  <ProjectReference Include="..\GenderHealthCare.Repositories\GenderHealthCare.Repositories.csproj" />
 	</ItemGroup>
-	
+
+
+	<ItemGroup>
+		<EmbeddedResource Include="Infrastructure/Templates/**/*.cshtml">
+			<LogicalName>GenderHealthCare.Services.Infrastructure.Templates.Emails.CycleTracking.%(Filename)%(Extension)</LogicalName>
+		</EmbeddedResource>
+	</ItemGroup>
+
 </Project>
