@@ -4,7 +4,7 @@ namespace GenderHealthCare.Entity
 {
     public class CycleNotification : BaseEntity
     {
-        public string NotificationType { get; set; } // e.g., UpcomingPeriod, OvulationDay, TakePill
+        public string NotificationType { get; set; } // e.g., UpcomingPeriod, OvulationDay, FertileWindow
         public DateTime NotificationDate { get; set; }
         public bool IsSent { get; set; }
         public DateTimeOffset? SentAt { get; set; }

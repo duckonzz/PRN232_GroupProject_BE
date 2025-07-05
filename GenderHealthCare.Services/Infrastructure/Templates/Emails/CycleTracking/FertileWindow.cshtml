@@ -1,0 +1,26 @@
+﻿@model dynamic
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Thông báo giai đoạn dễ thụ thai</title>
+</head>
+<body style="font-family: 'Segoe UI', sans-serif; background-color: #f8f9fa; margin: 0; padding: 20px;">
+    <div style="max-width: 600px; margin: auto; background-color: white; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.05); padding: 24px;">
+        <h2 style="color: #20c997; margin-bottom: 12px;">🌸 Cửa sổ dễ thụ thai</h2>
+        <p>Xin chào <strong>@Model.FullName</strong>,</p>
+
+        <p>Hôm nay nằm trong <strong>giai đoạn dễ thụ thai</strong> của bạn.</p>
+
+        <p style="color: #495057;">Nếu bạn đang có kế hoạch mang thai hoặc phòng tránh thai, hãy lưu ý đến thời điểm này.</p>
+
+        <p style="margin: 20px 0;"><strong>📅 Ngày:</strong> @Model.NotificationDate.ToString("dd/MM/yyyy")</p>
+
+        <p style="margin-top: 24px;">💐 Chúc bạn luôn khỏe mạnh và chủ động trong việc theo dõi chu kỳ của mình.</p>
+
+        <hr style="margin-top: 30px;">
+        <p style="font-size: 12px; color: #6c757d;">Email này được gửi từ hệ thống <strong>Gender Healthcare</strong>.</p>
+    </div>
+</body>
+</html>

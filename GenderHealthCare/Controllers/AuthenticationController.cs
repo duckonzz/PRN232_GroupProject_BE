@@ -68,12 +68,12 @@ namespace GenderHealthCare.Controllers
         /// </summary>
         /// <param name="request">The request containing the new password details.</param>
         /// <returns>A response indicating the success or failure of the password setting operation.</returns>
-        [HttpPost("set-password")]
+        [HttpPost("change-password")]
         [Authorize]
-        public async Task<IActionResult> SetPassword([FromBody] SetPasswordRequest request)
+        public async Task<IActionResult> SetPassword([FromBody] ChangePasswordRequest request)
         {
             var userId = _contextService.GetUserId();
-            await _authenticationService.SetPasswordAsync(userId, request);
+            await _authenticationService.ChangePasswordAsync(userId, request);
             return Ok(BaseResponse.OkMessageResponse("Password set successfully"));
         }
 

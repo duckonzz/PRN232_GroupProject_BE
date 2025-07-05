@@ -161,19 +161,25 @@ namespace GenderHealthCare.Services.Services
             return user.ToUserDto();
         }
 
-        public async Task SetPasswordAsync(string userId, SetPasswordRequest request)
+        public async Task ChangePasswordAsync(string userId, ChangePasswordRequest request)
         {
             var userRepo = _unitOfWork.GetRepository<User>();
             var user = await userRepo.GetByIdAsync(userId)
                 ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "User not found");
 
-            if (request.Password != request.ConfirmPassword)
+            if(request.OldPassword == request.NewPassword)
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "New password cannot be the same as the old password");
+
+            if (!_passwordHasher.VerifyPassword(user.PasswordHash, request.OldPassword))
+                throw new ErrorException(StatusCodes.Status401Unauthorized, ResponseCodeConstants.UNAUTHORIZED, "Old password is incorrect");
+
+            if (request.NewPassword != request.ConfirmPassword)
                 throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Passwords do not match");
 
-            if (!PasswordHelper.IsStrongPassword(request.Password))
+            if (!PasswordHelper.IsStrongPassword(request.NewPassword))
                 throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Password must be at least 8 characters and include uppercase, lowercase, number and special character");
 
-            user.PasswordHash = _passwordHasher.HashPassword(request.Password);
+            user.PasswordHash = _passwordHasher.HashPassword(request.NewPassword);
             user.LastUpdatedTime = CoreHelper.SystemTimeNow;
 
             userRepo.Update(user);
