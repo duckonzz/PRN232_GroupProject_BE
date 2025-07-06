@@ -9,6 +9,7 @@ namespace GenderHealthCare.Services.Mapping
         {
 
             var ovulationDate = cycle.StartDate.AddDays(cycle.CycleLength - 14);
+            var upcomingPeriod = cycle.StartDate.AddDays(cycle.CycleLength);
             var fertileWindowStart = ovulationDate.AddDays(-3);
             var fertileWindowEnd = ovulationDate.AddDays(1);
 
@@ -22,6 +23,7 @@ namespace GenderHealthCare.Services.Mapping
                 Notes = cycle.Notes,
 
                 OvulationDate = ovulationDate,
+                UpcomingPeriod = upcomingPeriod,
                 FertileWindowStart = fertileWindowStart,
                 FertileWindowEnd = fertileWindowEnd
             };
