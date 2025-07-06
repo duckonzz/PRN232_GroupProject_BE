@@ -103,7 +103,7 @@ namespace GenderHealthCare.Controllers
         /// <param name="userId">The ID of the user who requested to become a consultant.</param>
         /// <returns>A success message indicating the consultant has been approved.</returns>
         [HttpPut("{userId}/approve")]
-        public async Task<IActionResult> ApproveClinic(string userId)
+        public async Task<IActionResult> ApproveConsultant(string userId)
         {
             await _authenticationService.ApproveConsultantAsync(userId);
             return Ok(BaseResponse.OkMessageResponse("Consultant approved successfully"));
@@ -116,7 +116,7 @@ namespace GenderHealthCare.Controllers
         /// <param name="userId">The ID of the user who requested to become a consultant.</param>
         /// <returns>A success message indicating the consultant request has been rejected.</returns>
         [HttpPut("{userId}/reject")]
-        public async Task<IActionResult> RejectClinic(string userId)
+        public async Task<IActionResult> RejectConsultant(string userId)
         {
             await _authenticationService.RejectConsultantAsync(userId);
             return Ok(BaseResponse.OkMessageResponse("Consultant rejected successfully"));

@@ -21,6 +21,10 @@ namespace GenderHealthCare.Services.Validators
                 .GreaterThan(1).WithMessage("Period length must be at least 2 days")
                 .LessThanOrEqualTo(10).WithMessage("Period length must be at most 10 days")
                 .When(x => x.PeriodLength.HasValue);
+
+            RuleFor(x => x)
+                .Must(x => (!x.CycleLength.HasValue || !x.PeriodLength.HasValue) || x.CycleLength >= x.PeriodLength)
+                .WithMessage("Cycle length must be greater than or equal to period length");
         }
     }
 }
