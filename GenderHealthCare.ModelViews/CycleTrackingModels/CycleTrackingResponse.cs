@@ -9,6 +9,7 @@
         public int PeriodLength { get; set; }
         public string? Notes { get; set; }
 
+        public DateTime UpcomingPeriod { get; set; }
         public DateTime OvulationDate { get; set; }
         public DateTime FertileWindowStart { get; set; }
         public DateTime FertileWindowEnd { get; set; }
