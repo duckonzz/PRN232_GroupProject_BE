@@ -11,5 +11,6 @@ namespace GenderHealthCare.Contract.Services.Interfaces
         Task<CycleTrackingResponse> GetCycleByIdAsync(string cycleId, string userId);
         Task DeleteCycleAsync(string cycleId, string userId);
         Task UpdateUserCycleTrackingAsync(string userId, bool isEnabled);
+        Task GenerateCycleNotificationsAsync(string userId, ReproductiveCycle cycle);
     }
 }
