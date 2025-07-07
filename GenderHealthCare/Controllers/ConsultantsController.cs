@@ -2,6 +2,7 @@
 using GenderHealthCare.Contract.Services.Interfaces;
 using GenderHealthCare.Core.Helpers;
 using GenderHealthCare.Core.Models;
+using GenderHealthCare.ModelViews.ConsultantModel;
 using GenderHealthCare.ModelViews.ConsultantModels;
 using Microsoft.AspNetCore.Mvc;
 

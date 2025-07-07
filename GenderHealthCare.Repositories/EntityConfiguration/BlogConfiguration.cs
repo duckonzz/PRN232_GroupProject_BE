@@ -16,16 +16,27 @@ namespace GenderHealthCare.Repositories.EntityConfiguration
                    .IsRequired()
                    .HasMaxLength(200);
 
-            builder.Property(x => x.Content)
-                   .IsRequired();
-
             builder.Property(x => x.AuthorId)
                    .IsRequired();
+
+            builder.Property(x => x.Headline)
+                   .HasMaxLength(300);
+
+            builder.Property(x => x.Summary)
+                   .HasMaxLength(1000);
+
+            builder.Property(x => x.ThumbnailUrl)
+                   .HasMaxLength(500);
 
             builder.HasOne(x => x.Author)
                    .WithMany(u => u.Blogs)
                    .HasForeignKey(x => x.AuthorId)
                    .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasMany(x => x.Contents)
+                   .WithOne(c => c.Blog)
+                   .HasForeignKey(c => c.BlogId)
+                   .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

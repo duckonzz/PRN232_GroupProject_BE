@@ -1,6 +1,7 @@
 ﻿using GenderHealthCare.Contract.Repositories.PaggingItems;
 using GenderHealthCare.ModelViews.ConsultantModels;
 using GenderHealthCare.Core.Helpers;
+using GenderHealthCare.ModelViews.ConsultantModel;
 
 namespace GenderHealthCare.Contract.Services.Interfaces
 {
