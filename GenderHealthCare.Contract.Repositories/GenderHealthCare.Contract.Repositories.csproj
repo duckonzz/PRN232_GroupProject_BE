@@ -18,6 +18,9 @@
 	
   <ItemGroup>
     <ProjectReference Include="..\GenderHealthCare.Core\GenderHealthCare.Core.csproj" />
+    <ProjectReference Include="..\GenderHealthCare.Entity\GenderHealthCare.Entity.csproj">
+      <Private>True</Private>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>

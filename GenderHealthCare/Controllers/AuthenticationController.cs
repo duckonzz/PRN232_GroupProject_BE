@@ -23,8 +23,24 @@ namespace GenderHealthCare.Controllers
         /// <summary>
         /// Register a new user using email and password.
         /// </summary>
-        /// <param name="request">Registration details.</param>
-        /// <returns>User information after register</returns>
+        /// <param name="request">
+        /// Registration information including FullName, Email, PhoneNumber, Password, ConfirmPassword, DateOfBirth, Gender, and Role.
+        ///
+        /// <para><b>Gender:</b> Enum value (int)</para>
+        /// <para>- 0 = Male</para>
+        /// <para>- 1 = Female</para>
+        /// <para>- 2 = Other</para>
+        ///
+        /// <para><b>Role:</b> Enum value (int)</para>
+        /// <para>- 1 = Customer</para>
+        /// <para>- 2 = Consultant</para>
+        /// <para>- 3 = Staff</para>
+        /// <para>- 4 = Manager</para>
+        /// <para>- 5 = Admin</para>
+        ///
+        /// <para><b>⚠ Note:</b> If <c>Role = Consultant</c>, the user will be registered as a <c>Customer</c> first with <c>ConsultantStatus = "Pending"</c>. Admin approval is required to activate Consultant privileges.</para>
+        /// </param>
+        /// <returns>User information after successful registration.</returns>
         [HttpPost("register")]
         [AllowAnonymous]
         public async Task<IActionResult> Register([FromBody] UserRegistrationRequest request)
@@ -52,12 +68,12 @@ namespace GenderHealthCare.Controllers
         /// </summary>
         /// <param name="request">The request containing the new password details.</param>
         /// <returns>A response indicating the success or failure of the password setting operation.</returns>
-        [HttpPost("set-password")]
+        [HttpPost("change-password")]
         [Authorize]
-        public async Task<IActionResult> SetPassword([FromBody] SetPasswordRequest request)
+        public async Task<IActionResult> SetPassword([FromBody] ChangePasswordRequest request)
         {
             var userId = _contextService.GetUserId();
-            await _authenticationService.SetPasswordAsync(userId, request);
+            await _authenticationService.ChangePasswordAsync(userId, request);
             return Ok(BaseResponse.OkMessageResponse("Password set successfully"));
         }
 

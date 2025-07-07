@@ -15,6 +15,7 @@ namespace GenderHealthCare.Contract.Repositories.Interfaces
         Task InsertCollection(ICollection<T> collection);
 
         void Update(T obj);
+        void UpdateRange(IEnumerable<T> entities);
         void Delete(object id);
         void Save();
         Task<IEnumerable<T>> GetAsync(int index, int pageSize);

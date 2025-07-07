@@ -68,6 +68,9 @@ namespace GenderHealthCare.Services.Services
             if (query.Role.HasValue)
                 usersQuery = usersQuery.Where(u => u.Role == query.Role.Value.ToString());
 
+            if (query.ConsultantStatus.HasValue)
+                usersQuery = usersQuery.Where(u => u.ConsultantStatus == query.ConsultantStatus.Value.ToString());
+
             // Sorting logic
             usersQuery = !string.IsNullOrWhiteSpace(query.SortBy) ? query.SortBy.ToLower() switch
             {
@@ -148,7 +151,8 @@ namespace GenderHealthCare.Services.Services
                 PhoneNumber = request.PhoneNumber,
                 DateOfBirth = request.DateOfBirth,
                 Gender = request.Gender.ToString(),
-                Role = Role.Customer.ToString(),
+                Role = request.Role == Role.Consultant ? Role.Customer.ToString() : Role.Customer.ToString(),
+                ConsultantStatus = request.Role == Role.Consultant ? ConsultantStatus.Pending.ToString() : null,
             };
 
             await userRepo.InsertAsync(user);
@@ -157,19 +161,25 @@ namespace GenderHealthCare.Services.Services
             return user.ToUserDto();
         }
 
-        public async Task SetPasswordAsync(string userId, SetPasswordRequest request)
+        public async Task ChangePasswordAsync(string userId, ChangePasswordRequest request)
         {
             var userRepo = _unitOfWork.GetRepository<User>();
             var user = await userRepo.GetByIdAsync(userId)
                 ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "User not found");
 
-            if (request.Password != request.ConfirmPassword)
+            if(request.OldPassword == request.NewPassword)
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "New password cannot be the same as the old password");
+
+            if (!_passwordHasher.VerifyPassword(user.PasswordHash, request.OldPassword))
+                throw new ErrorException(StatusCodes.Status401Unauthorized, ResponseCodeConstants.UNAUTHORIZED, "Old password is incorrect");
+
+            if (request.NewPassword != request.ConfirmPassword)
                 throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Passwords do not match");
 
-            if (!PasswordHelper.IsStrongPassword(request.Password))
-                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Password must be at least 8 characters and include uppercase, lowercase, number and special character.");
+            if (!PasswordHelper.IsStrongPassword(request.NewPassword))
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Password must be at least 8 characters and include uppercase, lowercase, number and special character");
 
-            user.PasswordHash = _passwordHasher.HashPassword(request.Password);
+            user.PasswordHash = _passwordHasher.HashPassword(request.NewPassword);
             user.LastUpdatedTime = CoreHelper.SystemTimeNow;
 
             userRepo.Update(user);
@@ -219,6 +229,47 @@ namespace GenderHealthCare.Services.Services
             await _unitOfWork.SaveAsync();
 
             return user.ToUserDto();
+        }
+
+        public async Task ApproveConsultantAsync(string userId)
+        {
+            var userRepo = _unitOfWork.GetRepository<User>();
+            User user = await userRepo.Entities
+                .FirstOrDefaultAsync(u => u.Id == userId && !u.DeletedTime.HasValue)
+                ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "User not found");
+
+            if (user.Role != Role.Customer.ToString() || user.ConsultantStatus != ConsultantStatus.Pending.ToString())
+            {
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "User is not a pending consultant or already approved");
+            }
+
+            user.Role = Role.Consultant.ToString();
+            user.ConsultantStatus = ConsultantStatus.Approved.ToString();
+
+            user.LastUpdatedTime = CoreHelper.SystemTimeNow;
+
+            userRepo.Update(user);
+            await _unitOfWork.SaveAsync();
+        }
+
+        public async Task RejectConsultantAsync(string userId)
+        {
+            var userRepo = _unitOfWork.GetRepository<User>();
+            User user = await userRepo.Entities
+                .FirstOrDefaultAsync(u => u.Id == userId && !u.DeletedTime.HasValue)
+                ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "User not found");
+
+            if (user.Role != Role.Customer.ToString() || user.ConsultantStatus != ConsultantStatus.Pending.ToString())
+            {
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "User is not a pending consultant or already rejected");
+            }
+
+            user.ConsultantStatus = ConsultantStatus.Rejected.ToString();
+
+            user.LastUpdatedTime = CoreHelper.SystemTimeNow;
+
+            userRepo.Update(user);
+            await _unitOfWork.SaveAsync();
         }
 
         #region shared private methods
