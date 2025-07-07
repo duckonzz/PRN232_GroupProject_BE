@@ -1,6 +1,6 @@
 ﻿using GenderHealthCare.Contract.Services.Interfaces;
 using GenderHealthCare.Core.Models;
-using GenderHealthCare.ModelViews.ConsultantScheduleModel;
+using GenderHealthCare.ModelViews.ConsultantScheduleModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GenderHealthCare.Controllers

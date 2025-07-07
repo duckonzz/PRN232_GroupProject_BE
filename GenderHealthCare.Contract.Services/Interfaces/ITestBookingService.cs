@@ -1,11 +1,6 @@
 ﻿using GenderHealthCare.Contract.Repositories.PaggingItems;
+using GenderHealthCare.ModelViews.TestBookingModels;
 using GenderHealthCare.Core.Helpers;
-using GenderHealthCare.ModelViews.TestBookingModel;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GenderHealthCare.Contract.Services.Interfaces
 {

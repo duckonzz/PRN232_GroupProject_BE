@@ -21,9 +21,10 @@ namespace GenderHealthCare.Controllers
         }
 
         /// <summary>
-        /// 
+        /// Enable or disable cycle tracking for the current user.
         /// </summary>
-        /// <param name="isEnabled"></param>
+        /// <param name="isEnabled">True to enable tracking, false to disable it.</param>
+        /// <returns>Action result indicating success.</returns>
         /// <returns></returns>
         [HttpPut("enable-tracking")]
         public async Task<IActionResult> EnableTracking([FromQuery] bool isEnabled)
@@ -34,10 +35,10 @@ namespace GenderHealthCare.Controllers
         }
 
         /// <summary>
-        /// 
+        /// Create a new cycle for the current user.
         /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
+        /// <param name="request">Cycle tracking request data.</param>
+        /// <returns>The created cycle details.</returns>
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CycleTrackingRequest request)
         {
@@ -47,9 +48,9 @@ namespace GenderHealthCare.Controllers
         }
 
         /// <summary>
-        /// 
+        /// Get all cycles for the current user.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>List of cycles.</returns>
         [HttpGet]
         public async Task<IActionResult> GetCycles()
         {
@@ -59,10 +60,10 @@ namespace GenderHealthCare.Controllers
         }
 
         /// <summary>
-        /// 
+        /// Get details of a specific cycle by its ID.
         /// </summary>
-        /// <param name="cycleId"></param>
-        /// <returns></returns>
+        /// <param name="cycleId">The ID of the cycle to retrieve.</param>
+        /// <returns>Cycle details.</returns>
         [HttpGet("{cycleId}")]
         public async Task<IActionResult> GetCycleById(string cycleId)
         {
@@ -72,9 +73,10 @@ namespace GenderHealthCare.Controllers
         }
 
         /// <summary>
-        /// 
+        /// Delete a specific cycle by its ID.
         /// </summary>
-        /// <param name="cycleId"></param>
+        /// <param name="cycleId">The ID of the cycle to delete.</param>
+        /// <returns>Action result indicating success.</returns>
         /// <returns></returns>
         [HttpDelete("{cycleId}")]
         public async Task<IActionResult> Delete(string cycleId)

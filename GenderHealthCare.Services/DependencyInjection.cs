@@ -1,15 +1,13 @@
 ﻿using FluentValidation;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using GenderHealthCare.Contract.Repositories.Interfaces;
+using GenderHealthCare.Contract.Services.Interfaces;
 using GenderHealthCare.Repositories.Repositories;
-using System.Reflection;
-using GenderHealthCare.Contract.Services.Interfaces;
-using GenderHealthCare.Services.Validators;
-using GenderHealthCare.Contract.Services.Interfaces;
-using GenderHealthCare.Services.Services;
 using GenderHealthCare.Services.Infrastructure;
 using GenderHealthCare.Services.Infrastructure.Emailing;
+using GenderHealthCare.Services.Services;
+using GenderHealthCare.Services.Validators;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 
 namespace GenderHealthCare.Services
@@ -30,11 +28,13 @@ namespace GenderHealthCare.Services
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             services.AddScoped<IUserContextService, UserContextService>();
             services.AddScoped<IEmailService, EmailService>();
-            services.AddScoped<JwtTokenGenerator>();
+            services.AddScoped<IAvailableSlot, AvailableSlotService>();
             services.AddScoped<IEmailTemplateBuilder, EmailTemplateBuilder>();
+            services.AddScoped<IConsultationsService, ConsultationService>();
             services.AddScoped<IConsultantScheduleService, ConsultantScheduleService>();
             services.AddScoped<ITestSlotService, TestSlotService>();
             services.AddScoped<ITestBookingService, TestBookingService>();
+            services.AddScoped<JwtTokenGenerator>();
         }
         public static void AddRepository(this IServiceCollection services)
         {
@@ -52,6 +52,9 @@ namespace GenderHealthCare.Services
             services.AddValidatorsFromAssemblyContaining<UpdateUserRequestValidator>();
 
             services.AddValidatorsFromAssemblyContaining<CycleTrackingRequestValidator>();
+
+            services.AddValidatorsFromAssemblyContaining<UpdateConsultationResultRequestValidator>();
+            services.AddValidatorsFromAssemblyContaining<ConsultationRequestValidator>();
         }
     }
 }

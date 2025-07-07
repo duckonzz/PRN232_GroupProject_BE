@@ -1,9 +1,9 @@
 ﻿using AutoMapper;
 using GenderHealthCare.Entity;
-using GenderHealthCare.ModelViews.ConsultantModel;
-using GenderHealthCare.ModelViews.ConsultantScheduleModel;
-using GenderHealthCare.ModelViews.TestBookingModel;
-using GenderHealthCare.ModelViews.TestSlotModel;
+using GenderHealthCare.ModelViews.ConsultantModels;
+using GenderHealthCare.ModelViews.ConsultantScheduleModels;
+using GenderHealthCare.ModelViews.TestBookingModels;
+using GenderHealthCare.ModelViews.TestSlotModels;
 using System;
 using System.Collections.Generic;
 using System.Linq;

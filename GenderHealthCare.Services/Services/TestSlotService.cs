@@ -4,7 +4,7 @@ using GenderHealthCare.Contract.Repositories.PaggingItems;
 using GenderHealthCare.Contract.Services.Interfaces;
 using GenderHealthCare.Core.Helpers;
 using GenderHealthCare.Entity;
-using GenderHealthCare.ModelViews.TestSlotModel;
+using GenderHealthCare.ModelViews.TestSlotModels;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;

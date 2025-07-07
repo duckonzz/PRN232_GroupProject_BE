@@ -2,9 +2,12 @@
 using GenderHealthCare.Contract.Repositories.Interfaces;
 using GenderHealthCare.Contract.Repositories.PaggingItems;
 using GenderHealthCare.Contract.Services.Interfaces;
+using GenderHealthCare.Core.Constants;
+using GenderHealthCare.Core.Exceptions;
 using GenderHealthCare.Core.Helpers;
 using GenderHealthCare.Entity;
-using GenderHealthCare.ModelViews.ConsultantScheduleModel;
+using GenderHealthCare.ModelViews.ConsultantScheduleModels;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -18,21 +21,27 @@ namespace GenderHealthCare.Services.Services
     {
         private readonly IConsultantScheduleRepository _scheduleRepo;
         private readonly IConsultantRepository _consultantRepo;
+        private readonly IAvailableSlot _availableSlotService;
         private readonly IMapper _mapper;
 
         public ConsultantScheduleService(
             IConsultantScheduleRepository scheduleRepo,
             IConsultantRepository consultantRepo,
+            IAvailableSlot availableSlotService,
             IMapper mapper)
         {
             _scheduleRepo = scheduleRepo;
             _consultantRepo = consultantRepo;
+            _availableSlotService = availableSlotService;
             _mapper = mapper;
         }
 
         /* ---------- CREATE ---------- */
         public async Task<ServiceResponse<string>> CreateAsync(CreateConsultantScheduleDto dto)
         {
+            if (dto.StartTime >= dto.EndTime)
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "End time must be after start time");
+
             /* 1‑3. existing duration & date window checks (unchanged) */
             if (dto.EndTime <= dto.StartTime)
                 return new ServiceResponse<string> { Success = false, Message = "EndTime must be later than StartTime." };
@@ -71,6 +80,11 @@ namespace GenderHealthCare.Services.Services
             var entity = _mapper.Map<ConsultantSchedule>(dto);
             await _scheduleRepo.AddAsync(entity);
             await _scheduleRepo.SaveChangesAsync();
+
+            // Tạo sẵn các slot trống cho lịch trình này
+            await _availableSlotService.GenerateAvailableSlotsAsync(entity.Id, TimeSpan.FromMinutes(30));
+
+            return entity.Id;
 
             return new ServiceResponse<string> { Data = entity.Id, Success = true, Message = "Schedule created successfully" };
         }
