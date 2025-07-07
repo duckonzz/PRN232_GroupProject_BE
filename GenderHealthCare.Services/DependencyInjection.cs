@@ -24,6 +24,7 @@ namespace GenderHealthCare.Services
             services.AddScoped<IAuthenticationService, AuthenticationService>();
             services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
             services.AddScoped<IUserContextService, UserContextService>();
+            services.AddScoped<IBlogService, BlogService>();
             services.AddScoped<JwtTokenGenerator>();
         }
         public static void AddRepository(this IServiceCollection services)
