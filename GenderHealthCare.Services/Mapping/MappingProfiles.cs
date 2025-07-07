@@ -2,6 +2,7 @@
 using GenderHealthCare.Entity;
 using GenderHealthCare.ModelViews.ConsultantModels;
 using GenderHealthCare.ModelViews.ConsultantScheduleModels;
+using GenderHealthCare.ModelViews.FeedbackModels;
 using GenderHealthCare.ModelViews.TestBookingModels;
 using GenderHealthCare.ModelViews.TestSlotModels;
 using System;
@@ -79,6 +80,11 @@ namespace GenderHealthCare.Services.Mapping
             CreateMap<TestBooking, TestBookingDto>();
             CreateMap<CreateTestBookingDto, TestBooking>();
             CreateMap<UpdateTestBookingDto, TestBooking>();
+
+            CreateMap<CreateFeedbackDto, Feedback>();
+            CreateMap<UpdateFeedbackDto, Feedback>();
+            CreateMap<Feedback, FeedbackDto>()
+                .ForMember(d => d.FullName, o => o.MapFrom(s => s.User.FullName));
 
         }
     }
