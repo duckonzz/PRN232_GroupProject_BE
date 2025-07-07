@@ -5,7 +5,7 @@ using GenderHealthCare.Contract.Services.Interfaces;
 using GenderHealthCare.Core.Enums;
 using GenderHealthCare.Core.Helpers;
 using GenderHealthCare.Entity;
-using GenderHealthCare.ModelViews.TestBookingModel;
+using GenderHealthCare.ModelViews.TestBookingModels;
 using GenderHealthCare.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 using System;

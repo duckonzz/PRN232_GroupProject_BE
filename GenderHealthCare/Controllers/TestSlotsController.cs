@@ -1,6 +1,6 @@
 ﻿using GenderHealthCare.Contract.Services.Interfaces;
 using GenderHealthCare.Core.Models;
-using GenderHealthCare.ModelViews.TestSlotModel;
+using GenderHealthCare.ModelViews.TestSlotModels;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GenderHealthCare.Controllers

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace GenderHealthCare.ModelViews.ConsultantModel
+﻿namespace GenderHealthCare.ModelViews.ConsultantModels
 {
     public class CreateConsultantDto
     {
