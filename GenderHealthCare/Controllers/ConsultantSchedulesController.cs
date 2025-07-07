@@ -20,8 +20,12 @@ namespace GenderHealthCare.Controllers
             [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             var result = await _service.GetAllAsync(page, pageSize);
-            return Ok(BaseResponseModel<BasePaginatedList<ConsultantScheduleDto>>
-                      .OkDataResponse(result, "Schedule list retrieved successfully"));
+
+            return result.Success
+                ? Ok(BaseResponseModel<BasePaginatedList<ConsultantScheduleDto>>
+                     .OkDataResponse(result.Data, "Schedule list retrieved successfully"))
+                : BadRequest(BaseResponseModel<string>
+                     .BadRequestResponse(result.Message));
         }
 
         /* ---------------- SEARCH ---------------- */
@@ -38,8 +42,11 @@ namespace GenderHealthCare.Controllers
             var result = await _service.SearchAsync(
                 availableDate, startTime, endTime, consultantId, page, pageSize);
 
-            return Ok(BaseResponseModel<BasePaginatedList<ConsultantScheduleDto>>
-                      .OkDataResponse(result, "Schedule search completed successfully"));
+            return result.Success
+                ? Ok(BaseResponseModel<BasePaginatedList<ConsultantScheduleDto>>
+                     .OkDataResponse(result.Data, "Schedule search completed successfully"))
+                : BadRequest(BaseResponseModel<string>
+                     .BadRequestResponse(result.Message));
         }
 
         /* ---------------- GET BY ID ---------------- */
@@ -47,12 +54,13 @@ namespace GenderHealthCare.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetByIdAsync(string id)
         {
-            var dto = await _service.GetByIdAsync(id);
-            if (dto is null)
-                return NotFound(BaseResponseModel<string>.BadRequestResponse("Schedule not found"));
+            var result = await _service.GetByIdAsync(id);
+
+            if (!result.Success)
+                return NotFound(BaseResponseModel<string>.BadRequestResponse(result.Message));
 
             return Ok(BaseResponseModel<ConsultantScheduleDto>
-                      .OkDataResponse(dto, "Schedule retrieved successfully"));
+                      .OkDataResponse(result.Data, "Schedule retrieved successfully"));
         }
 
         /* ---------------- CREATE ---------------- */
@@ -60,9 +68,13 @@ namespace GenderHealthCare.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateAsync([FromBody] CreateConsultantScheduleDto dto)
         {
-            var id = await _service.CreateAsync(dto);
-            return Ok(BaseResponseModel<string>
-                      .OkDataResponse(id, "Schedule created successfully"));
+            var result = await _service.CreateAsync(dto);
+
+            return result.Success
+                ? Ok(BaseResponseModel<string>
+                     .OkDataResponse(result.Data, "Schedule created successfully"))
+                : BadRequest(BaseResponseModel<string>
+                     .BadRequestResponse(result.Message));
         }
 
         /* ---------------- UPDATE ---------------- */
@@ -71,8 +83,12 @@ namespace GenderHealthCare.Controllers
         public async Task<IActionResult> UpdateAsync(
             string id, [FromBody] UpdateConsultantScheduleDto dto)
         {
-            await _service.UpdateAsync(id, dto);
-            return Ok(BaseResponse.OkMessageResponse("Schedule updated successfully"));
+            var result = await _service.UpdateAsync(id, dto);
+
+            return result.Success
+                ? Ok(BaseResponse.OkMessageResponse("Schedule updated successfully"))
+                : BadRequest(BaseResponseModel<string>
+                     .BadRequestResponse(result.Message));
         }
 
         /* ---------------- DELETE ---------------- */
@@ -80,8 +96,12 @@ namespace GenderHealthCare.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(string id)
         {
-            await _service.DeleteAsync(id);
-            return Ok(BaseResponse.OkMessageResponse("Schedule deleted successfully"));
+            var result = await _service.DeleteAsync(id);
+
+            return result.Success
+                ? Ok(BaseResponse.OkMessageResponse("Schedule deleted successfully"))
+                : BadRequest(BaseResponseModel<string>
+                     .BadRequestResponse(result.Message));
         }
     }
 }

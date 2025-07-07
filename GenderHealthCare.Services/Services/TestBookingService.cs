@@ -3,6 +3,7 @@ using GenderHealthCare.Contract.Repositories.Interfaces;
 using GenderHealthCare.Contract.Repositories.PaggingItems;
 using GenderHealthCare.Contract.Services.Interfaces;
 using GenderHealthCare.Core.Enums;
+using GenderHealthCare.Core.Helpers;
 using GenderHealthCare.Entity;
 using GenderHealthCare.ModelViews.TestBookingModel;
 using GenderHealthCare.Repositories.Base;
@@ -18,119 +19,134 @@ namespace GenderHealthCare.Services.Services
     public class TestBookingService : ITestBookingService
     {
         private readonly ITestBookingRepository _repo;
-        private readonly GenderHealthCareDbContext _context;  // ⭐️
+        private readonly GenderHealthCareDbContext _ctx;
         private readonly IMapper _mapper;
-
         public TestBookingService(ITestBookingRepository repo,
-                                  GenderHealthCareDbContext context,
+                                  GenderHealthCareDbContext ctx,
                                   IMapper mapper)
         {
-            _repo = repo;
-            _context = context;
-            _mapper = mapper;
+            _repo = repo; _ctx = ctx; _mapper = mapper;
         }
 
-
-        public async Task<string> CreateAsync(CreateTestBookingDto dto)
+        /* ---------------- CREATE ---------------- */
+        public async Task<ServiceResponse<string>> CreateAsync(CreateTestBookingDto dto)
         {
-            // 1. Lấy slot + kiểm tra đã được đặt chưa
-            var slot = await _context.TestSlots
-                .FirstOrDefaultAsync(s => s.Id == dto.SlotId)
-                ?? throw new KeyNotFoundException("TestSlot not found");
-
+            var slot = await _ctx.TestSlots.FirstOrDefaultAsync(s => s.Id == dto.SlotId);
+            if (slot is null)
+                return new ServiceResponse<string> { Success = false, Message = "TestSlot not found." };
             if (slot.IsBooked)
-                throw new InvalidOperationException("This slot is already booked");
+                return new ServiceResponse<string> { Success = false, Message = "This slot is already booked." };
 
-            // 2. Tạo booking
             var booking = _mapper.Map<TestBooking>(dto);
             booking.Status = TestBookingStatus.Pending.ToString();
 
             await _repo.AddAsync(booking);
 
-            // 3. Cập‑nhật slot
             slot.IsBooked = true;
             slot.BookedByUserId = dto.CustomerId;
             slot.BookedAt = DateTimeOffset.UtcNow;
 
-            // 4. Lưu thay đổi (cùng transaction DbContext)
             await _repo.SaveChangesAsync();
 
-            return booking.Id;
+            return new ServiceResponse<string>
+            { Data = booking.Id, Success = true, Message = "Created successfully" };
         }
 
-        public async Task UpdateAsync(string id, UpdateTestBookingDto dto)
+        /* ---------------- UPDATE ---------------- */
+        public async Task<ServiceResponse<bool>> UpdateAsync(string id, UpdateTestBookingDto dto)
         {
-            var booking = await _context.TestBookings
-                .Include(b => b.Slot)
-                .FirstOrDefaultAsync(b => b.Id == id)
-                ?? throw new KeyNotFoundException("TestBooking not found");
+            var booking = await _ctx.TestBookings.Include(b => b.Slot)
+                                                 .FirstOrDefaultAsync(b => b.Id == id);
+            if (booking is null)
+                return new ServiceResponse<bool> { Success = false, Message = "TestBooking not found." };
 
-            bool isSlotChanged = dto.SlotId != null && dto.SlotId != booking.SlotId;
-
-            if (isSlotChanged)
+            bool slotChanged = !string.IsNullOrWhiteSpace(dto.SlotId) && dto.SlotId != booking.SlotId;
+            if (slotChanged)
             {
-                // 1. Giải phóng slot cũ
-                var oldSlot = await _context.TestSlots.FirstOrDefaultAsync(s => s.Id == booking.SlotId);
-                if (oldSlot != null)
+                var newSlot = await _ctx.TestSlots.FirstOrDefaultAsync(s => s.Id == dto.SlotId);
+                if (newSlot is null)
+                    return new ServiceResponse<bool> { Success = false, Message = "New TestSlot not found." };
+                if (newSlot.IsBooked)
+                    return new ServiceResponse<bool> { Success = false, Message = "New TestSlot is already booked." };
+
+                // free old
+                if (booking.Slot is not null)
                 {
-                    oldSlot.IsBooked = false;
-                    oldSlot.BookedByUserId = null;
-                    oldSlot.BookedAt = null;
+                    booking.Slot.IsBooked = false;
+                    booking.Slot.BookedAt = null;
+                    booking.Slot.BookedByUserId = null;
                 }
 
-                // 2. Kiểm tra slot mới
-                var newSlot = await _context.TestSlots
-                    .FirstOrDefaultAsync(s => s.Id == dto.SlotId)
-                    ?? throw new KeyNotFoundException("New TestSlot not found");
-
-                if (newSlot.IsBooked)
-                    throw new InvalidOperationException("New TestSlot is already booked");
-
-                // 3. Gán slot mới cho booking
                 booking.SlotId = dto.SlotId!;
                 newSlot.IsBooked = true;
                 newSlot.BookedByUserId = booking.CustomerId;
                 newSlot.BookedAt = DateTimeOffset.UtcNow;
             }
 
-            // 4. Cập nhật các field khác (Status, ResultUrl)
             booking.Status = dto.Status;
             booking.ResultUrl = dto.ResultUrl;
 
-            await _context.SaveChangesAsync();
+            await _ctx.SaveChangesAsync();
+            return new ServiceResponse<bool>
+            { Data = true, Success = true, Message = "Updated successfully" };
         }
 
-
-        public async Task DeleteAsync(string id)
+        /* ---------------- DELETE ---------------- */
+        public async Task<ServiceResponse<bool>> DeleteAsync(string id)
         {
-            var entity = await _repo.GetByIdAsync(id)
-                ?? throw new KeyNotFoundException("TestBooking not found");
+            var booking = await _repo.GetByIdAsync(id);
+            if (booking is null)
+                return new ServiceResponse<bool> { Success = false, Message = "TestBooking not found." };
 
-            _repo.Delete(entity);
+            // free its slot
+            var slot = await _ctx.TestSlots.FirstOrDefaultAsync(s => s.Id == booking.SlotId);
+            if (slot is not null)
+            {
+                slot.IsBooked = false;
+                slot.BookedAt = null;
+                slot.BookedByUserId = null;
+            }
+
+            _repo.Delete(booking);
             await _repo.SaveChangesAsync();
+
+            return new ServiceResponse<bool>
+            { Data = true, Success = true, Message = "Deleted successfully" };
         }
 
-        public async Task<TestBookingDto?> GetByIdAsync(string id)
+        /* ---------------- READ ---------------- */
+        public async Task<ServiceResponse<TestBookingDto>> GetByIdAsync(string id)
         {
             var entity = await _repo.GetByIdAsync(id);
-            return entity == null ? null : _mapper.Map<TestBookingDto>(entity);
+            return entity is null
+                ? new ServiceResponse<TestBookingDto>
+                { Success = false, Message = "TestBooking not found." }
+                : new ServiceResponse<TestBookingDto>
+                { Data = _mapper.Map<TestBookingDto>(entity), Success = true, Message = "Retrieved successfully" };
         }
 
-        public async Task<PaginatedList<TestBookingDto>> GetAllAsync(int page, int size)
+        public async Task<ServiceResponse<PaginatedList<TestBookingDto>>> GetAllAsync(int page, int size)
         {
-            var query = _repo.Query().OrderByDescending(t => t.CreatedTime);
-            var paged = await PaginatedList<TestBooking>.CreateAsync(query, page, size);
-            return new PaginatedList<TestBookingDto>(
-                paged.Items.Select(_mapper.Map<TestBookingDto>).ToList(),
-                paged.TotalCount, page, size);
+            var q = _repo.Query().OrderByDescending(t => t.CreatedTime);
+            var paged = await PaginatedList<TestBooking>.CreateAsync(q, page, size);
+            var result = new PaginatedList<TestBookingDto>(
+                            paged.Items.Select(_mapper.Map<TestBookingDto>).ToList(),
+                            paged.TotalCount, page, size);
+
+            return new ServiceResponse<PaginatedList<TestBookingDto>>
+            { Data = result, Success = true, Message = "Test bookings retrieved successfully" };
         }
 
-        public async Task<PaginatedList<TestBookingDto>> SearchAsync(string? status, string? customerId, int page, int size)
+        public async Task<ServiceResponse<PaginatedList<TestBookingDto>>> SearchAsync(
+            string? status, string? customerId, int page, int size)
         {
             var paged = await _repo.SearchAsync(status, customerId, page, size);
-            return new PaginatedList<TestBookingDto>(
-                paged.Items.Select(_mapper.Map<TestBookingDto>).ToList(),
-                paged.TotalCount, page, size);
+            var result = new PaginatedList<TestBookingDto>(
+                            paged.Items.Select(_mapper.Map<TestBookingDto>).ToList(),
+                            paged.TotalCount, page, size);
+
+            return new ServiceResponse<PaginatedList<TestBookingDto>>
+            { Data = result, Success = true, Message = "Search completed successfully" };
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using GenderHealthCare.Contract.Repositories.PaggingItems;
+using GenderHealthCare.Core.Helpers;
 using GenderHealthCare.ModelViews.TestBookingModel;
 using System;
 using System.Collections.Generic;
@@ -10,11 +11,13 @@ namespace GenderHealthCare.Contract.Services.Interfaces
 {
     public interface ITestBookingService
     {
-        Task<string> CreateAsync(CreateTestBookingDto dto);
-        Task UpdateAsync(string id, UpdateTestBookingDto dto);
-        Task DeleteAsync(string id);
-        Task<TestBookingDto?> GetByIdAsync(string id);
-        Task<PaginatedList<TestBookingDto>> GetAllAsync(int page, int size);
-        Task<PaginatedList<TestBookingDto>> SearchAsync(string? status, string? customerId, int page, int size);
+        Task<ServiceResponse<string>> CreateAsync(CreateTestBookingDto dto);
+        Task<ServiceResponse<bool>> UpdateAsync(string id, UpdateTestBookingDto dto);
+        Task<ServiceResponse<bool>> DeleteAsync(string id);
+
+        Task<ServiceResponse<TestBookingDto>> GetByIdAsync(string id);
+        Task<ServiceResponse<PaginatedList<TestBookingDto>>> GetAllAsync(int page, int size);
+        Task<ServiceResponse<PaginatedList<TestBookingDto>>> SearchAsync(
+            string? status, string? customerId, int page, int size);
     }
 }

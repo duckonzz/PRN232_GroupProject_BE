@@ -1,4 +1,5 @@
 ﻿using GenderHealthCare.Contract.Repositories.PaggingItems;
+using GenderHealthCare.Core.Helpers;
 using GenderHealthCare.ModelViews.TestSlotModel;
 using System;
 using System.Collections.Generic;
@@ -10,11 +11,13 @@ namespace GenderHealthCare.Contract.Services.Interfaces
 {
     public interface ITestSlotService
     {
-        Task<string> CreateAsync(CreateTestSlotDto dto);
-        Task UpdateAsync(string id, UpdateTestSlotDto dto);
-        Task DeleteAsync(string id);
-        Task<TestSlotDto?> GetByIdAsync(string id);
-        Task<PaginatedList<TestSlotDto>> GetAllAsync(int page, int size);
-        Task<PaginatedList<TestSlotDto>> SearchAsync(DateTime? testDate, string? userId, int page, int size);
+        Task<ServiceResponse<string>> CreateAsync(CreateTestSlotDto dto);
+        Task<ServiceResponse<bool>> UpdateAsync(string id, UpdateTestSlotDto dto);
+        Task<ServiceResponse<bool>> DeleteAsync(string id);
+
+        Task<ServiceResponse<TestSlotDto>> GetByIdAsync(string id);
+        Task<ServiceResponse<PaginatedList<TestSlotDto>>> GetAllAsync(int page, int size);
+        Task<ServiceResponse<PaginatedList<TestSlotDto>>> SearchAsync(
+            DateTime? testDate, string? userId, int page, int size);
     }
 }

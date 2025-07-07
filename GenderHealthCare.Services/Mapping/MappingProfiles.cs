@@ -39,7 +39,16 @@ namespace GenderHealthCare.Services.Mapping
 
             /* ---------------- Consultant <‑‑> DTO ---------------- */
 
-            CreateMap<Consultant, ConsultantDto>().ReverseMap();
+            CreateMap<Consultant, ConsultantDto>()
+            .ForMember(d => d.FullName, o => o.MapFrom(s => s.User.FullName))
+            .ForMember(d => d.Email, o => o.MapFrom(s => s.User.Email))
+            .ForMember(d => d.PhoneNumber, o => o.MapFrom(s => s.User.PhoneNumber))
+            .ForMember(d => d.DateOfBirth, o => o.MapFrom(s => s.User.DateOfBirth))
+            .ForMember(d => d.Gender, o => o.MapFrom(s => s.User.Gender))
+            .ForMember(d => d.Role, o => o.MapFrom(s => s.User.Role))
+            .ForMember(d => d.IsCycleTrackingOn,
+                                        o => o.MapFrom(s => s.User.IsCycleTrackingOn))
+            ;
             CreateMap<CreateConsultantDto, Consultant>()
             .ForMember(dest => dest.User,
                      opt => opt.MapFrom(src => new User
