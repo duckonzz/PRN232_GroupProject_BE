@@ -84,7 +84,6 @@ namespace GenderHealthCare.Services.Services
             // Tạo sẵn các slot trống cho lịch trình này
             await _availableSlotService.GenerateAvailableSlotsAsync(entity.Id, TimeSpan.FromMinutes(30));
 
-
             return new ServiceResponse<string> { Data = entity.Id, Success = true, Message = "Schedule created successfully" };
         }
 
