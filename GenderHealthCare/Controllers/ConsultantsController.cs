@@ -1,4 +1,6 @@
-﻿using GenderHealthCare.Contract.Services.Interfaces;
+﻿using GenderHealthCare.Contract.Repositories.PaggingItems;
+using GenderHealthCare.Contract.Services.Interfaces;
+using GenderHealthCare.Core.Helpers;
 using GenderHealthCare.Core.Models;
 using GenderHealthCare.ModelViews.ConsultantModel;
 using Microsoft.AspNetCore.Mvc;
@@ -12,18 +14,23 @@ namespace GenderHealthCare.Controllers
         private readonly IConsultantService _service;
         public ConsultantsController(IConsultantService service) => _service = service;
 
-        /* ---------- GET ALL ---------- */
+        /* ---------------- GET ALL (paginated) ---------------- */
         // GET: api/Consultants?page=1&pageSize=10
         [HttpGet]
         public async Task<IActionResult> GetAllAsync(
             [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            var result = await _service.GetAllAsync(page, pageSize);
-            return Ok(BaseResponseModel<BasePaginatedList<ConsultantDto>>
-                      .OkDataResponse(result, "Consultant list retrieved successfully"));
+            ServiceResponse<PaginatedList<ConsultantDto>> result =
+                await _service.GetAllAsync(page, pageSize);
+
+            return result.Success
+                ? Ok(BaseResponseModel<BasePaginatedList<ConsultantDto>>
+                     .OkDataResponse(result.Data, result.Message))
+                : BadRequest(BaseResponseModel<string>
+                     .BadRequestResponse(result.Message));
         }
 
-        /* ---------- SEARCH ---------- */
+        /* ---------------- SEARCH ---------------- */
         // GET: api/Consultants/search?...params...
         [HttpGet("search")]
         public async Task<IActionResult> SearchAsync(
@@ -34,50 +41,88 @@ namespace GenderHealthCare.Controllers
             [FromQuery] int pageSize = 10)
         {
             var result = await _service.SearchAsync(degree, email, expYears, page, pageSize);
-            return Ok(BaseResponseModel<BasePaginatedList<ConsultantDto>>
-                      .OkDataResponse(result, "Consultant search completed successfully"));
+
+            return result.Success
+                ? Ok(BaseResponseModel<BasePaginatedList<ConsultantDto>>
+                     .OkDataResponse(result.Data, result.Message))
+                : BadRequest(BaseResponseModel<string>
+                     .BadRequestResponse(result.Message));
         }
 
-        /* ---------- GET BY ID ---------- */
+        /* ---------------- GET BY ID ---------------- */
         // GET: api/Consultants/{id}
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetConsultantById")]
         public async Task<IActionResult> GetByIdAsync(string id)
         {
-            var dto = await _service.GetByIdAsync(id);
-            if (dto is null)
-                return NotFound(BaseResponseModel<string>.BadRequestResponse("Consultant not found"));
+            var result = await _service.GetByIdAsync(id);
 
-            return Ok(BaseResponseModel<ConsultantDto>
-                      .OkDataResponse(dto, "Consultant retrieved successfully"));
+            return result.Success
+                ? Ok(BaseResponseModel<ConsultantDto>
+                     .OkDataResponse(result.Data, result.Message))
+                : NotFound(BaseResponseModel<string>
+                     .BadRequestResponse(result.Message));
         }
 
-        /* ---------- CREATE ---------- */
+        /* ---------------- CREATE ---------------- */
         // POST: api/Consultants
         [HttpPost]
         public async Task<IActionResult> CreateAsync([FromBody] CreateConsultantDto dto)
         {
-            var id = await _service.CreateAsync(dto);
-            return Ok(BaseResponseModel<string>
-                      .OkDataResponse(id, "Consultant created successfully"));
+            var result = await _service.CreateAsync(dto);
+
+            if (!result.Success)
+                return BadRequest(BaseResponseModel<string>
+                                  .BadRequestResponse(result.Message));
+
+            // 201 Created + Location header
+            return CreatedAtAction(nameof(GetByIdAsync),
+                                   new { id = result.Data },
+                                   BaseResponseModel<string>.OkDataResponse(result.Data, result.Message));
         }
 
-        /* ---------- UPDATE ---------- */
+        /* ---------------- UPDATE ---------------- */
         // PUT: api/Consultants/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAsync(
             string id, [FromBody] UpdateConsultantDto dto)
         {
-            await _service.UpdateAsync(id, dto);
-            return Ok(BaseResponse.OkMessageResponse("Consultant updated successfully"));
+            var result = await _service.UpdateAsync(id, dto);
+
+            return result.Success
+                ? Ok(BaseResponse.OkMessageResponse(result.Message))
+                : BadRequest(BaseResponseModel<string>
+                     .BadRequestResponse(result.Message));
         }
 
-        /* ---------- DELETE ---------- */
+        /* ---------------- DELETE ---------------- */
         // DELETE: api/Consultants/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(string id)
         {
-            await _service.DeleteAsync(id);
-            return Ok(BaseResponse.OkMessageResponse("Consultant deleted successfully"));
+            var result = await _service.DeleteAsync(id);
+
+            return result.Success
+                ? Ok(BaseResponse.OkMessageResponse(result.Message))
+                : NotFound(BaseResponseModel<string>
+                     .BadRequestResponse(result.Message));
+        }
+
+        // POST: api/Consultants/byUser/{userId}
+        [HttpPost("byUser/{userId}")]
+        public async Task<IActionResult> CreateFromUserAsync(
+        string userId,
+        [FromBody] CreateConsultantProfileDto dto)
+        {
+            var result = await _service.CreateFromUserAsync(userId, dto);
+
+            if (!result.Success)
+                return BadRequest(BaseResponseModel<string>
+                                  .BadRequestResponse(result.Message));
+
+            return CreatedAtRoute(
+                routeName: "GetConsultantById",
+                routeValues: new { id = result.Data },
+                value: BaseResponseModel<string>.OkDataResponse(result.Data, result.Message));
         }
     }
 }

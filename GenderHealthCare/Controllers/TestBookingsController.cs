@@ -10,18 +10,13 @@ namespace GenderHealthCare.Controllers
     public class TestBookingsController : ControllerBase
     {
         private readonly ITestBookingService _service;
-
-        public TestBookingsController(ITestBookingService service)
-        {
-            _service = service;
-        }
+        public TestBookingsController(ITestBookingService service) => _service = service;
 
         [HttpGet]
         public async Task<IActionResult> GetAllAsync([FromQuery] int page = 1, [FromQuery] int size = 10)
         {
             var result = await _service.GetAllAsync(page, size);
-            return Ok(BaseResponseModel<BasePaginatedList<TestBookingDto>>
-                      .OkDataResponse(result, "Test bookings retrieved successfully"));
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
         [HttpGet("search")]
@@ -32,40 +27,39 @@ namespace GenderHealthCare.Controllers
             [FromQuery] int size = 10)
         {
             var result = await _service.SearchAsync(status, customerId, page, size);
-            return Ok(BaseResponseModel<BasePaginatedList<TestBookingDto>>
-                      .OkDataResponse(result, "Search completed successfully"));
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id}", Name = "GetTestBookingById")]
         public async Task<IActionResult> GetByIdAsync(string id)
         {
-            var dto = await _service.GetByIdAsync(id);
-            if (dto is null)
-                return NotFound(BaseResponseModel<string>.BadRequestResponse("Test booking not found"));
-
-            return Ok(BaseResponseModel<TestBookingDto>.OkDataResponse(dto, "Retrieved successfully"));
+            var result = await _service.GetByIdAsync(id);
+            return result.Success ? Ok(result) : NotFound(result);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateAsync([FromBody] CreateTestBookingDto dto)
         {
-            var id = await _service.CreateAsync(dto);
-            return Ok(BaseResponseModel<string>.OkDataResponse(id, "Created successfully"));
+            var result = await _service.CreateAsync(dto);
+            if (!result.Success) return BadRequest(result);
+
+            return CreatedAtRoute("GetTestBookingById",
+                                  new { id = result.Data },
+                                  result);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateAsync(string id, [FromBody] UpdateTestBookingDto dto)
         {
-            await _service.UpdateAsync(id, dto);
-            return Ok(BaseResponse.OkMessageResponse("Updated successfully"));
+            var result = await _service.UpdateAsync(id, dto);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(string id)
         {
-            await _service.DeleteAsync(id);
-            return Ok(BaseResponse.OkMessageResponse("Deleted successfully"));
+            var result = await _service.DeleteAsync(id);
+            return result.Success ? Ok(result) : NotFound(result);
         }
     }
-
 }

@@ -43,6 +43,7 @@ namespace GenderHealthCare.Services
             services.AddScoped<IConsultantScheduleRepository, ConsultantScheduleRepository>();
             services.AddScoped<ITestSlotRepository, TestSlotRepository>();
             services.AddScoped<ITestBookingRepository, TestBookingRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
         }
 
         public static void AddValidators(this IServiceCollection services)
