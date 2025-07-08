@@ -53,7 +53,7 @@ namespace GenderHealthCare.Controllers
         /// <br/>• <b>PageIndex</b>, <b>PageSize</b>: (default = 1, 10) Pagination parameters
         /// </param>
         /// <returns>A paginated list of consultations</returns>
-        [Authorize(Roles = "Consultant")]
+        [Authorize]
         [HttpGet("consultations")]
         public async Task<IActionResult> GetConsultations([FromQuery] ConsultationQueryObject query)
         {
