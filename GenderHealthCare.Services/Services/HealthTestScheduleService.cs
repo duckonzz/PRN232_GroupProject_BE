@@ -35,6 +35,14 @@ namespace GenderHealthCare.Services.Services
             if (model.DaysOfWeek == null || !model.DaysOfWeek.Any())
                 throw new ArgumentException("At least one day of week must be specified");
 
+            var expectedDuration = TimeSpan.FromMinutes(model.SlotDurationInMinutes);
+            var actualDuration = model.SlotEnd - model.SlotStart;
+
+            if (actualDuration != expectedDuration)
+            {
+                throw new ArgumentException($"The duration between SlotStart and SlotEnd must be exactly {model.SlotDurationInMinutes} minutes.");
+            }
+
             // Validate each day
             var validDays = new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
             var invalidDays = model.DaysOfWeek.Except(validDays).ToList();
