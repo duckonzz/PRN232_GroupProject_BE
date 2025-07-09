@@ -5,6 +5,8 @@
         public DateTime TestDate { get; set; }
         public TimeSpan SlotStart { get; set; }
         public TimeSpan SlotEnd { get; set; }
-        public string HealthTestId { get; set; }
+        public string HealthTestId { get; set; } = default!;
+
+        public string? CustomerId { get; set; }
     }
 }
