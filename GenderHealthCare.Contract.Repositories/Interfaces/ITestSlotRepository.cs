@@ -16,5 +16,7 @@ namespace GenderHealthCare.Contract.Repositories.Interfaces
         void Delete(TestSlot entity);
         Task SaveChangesAsync();
         Task<PaginatedList<TestSlot>> SearchAsync(DateTime? testDate, string? userId, int page, int size);
+        Task<PaginatedList<TestSlot>> GetByUserAsync(
+          string userId, int page, int size);
     }
 }
