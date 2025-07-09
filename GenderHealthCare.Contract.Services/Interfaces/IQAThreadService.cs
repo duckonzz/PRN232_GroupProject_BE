@@ -21,5 +21,11 @@ namespace GenderHealthCare.Contract.Services.Interfaces
         Task<ServiceResponse<PaginatedList<QAThreadDto>>> SearchAsync(
             string? customerId, string? consultantId, bool? answered,
             int page, int size);
+
+        Task<ServiceResponse<PaginatedList<QAThreadHistoryDto>>>
+            GetConversationAsync(string customerId,
+                                 string consultantId,
+                                 int page,
+                                 int size);
     }
 }

@@ -23,5 +23,8 @@ namespace GenderHealthCare.Contract.Repositories.Interfaces
         void Update(QAThread thread);
         void Delete(QAThread thread);
         Task SaveChangesAsync();
+
+        Task<PaginatedList<QAThread>> GetConversationAsync(
+           string customerId, string consultantId, int page, int size);
     }
 }

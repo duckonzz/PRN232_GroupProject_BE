@@ -182,5 +182,22 @@ namespace GenderHealthCare.Services.Services
                 Message = "Search completed successfully"
             };
         }
+
+        public async Task<ServiceResponse<PaginatedList<TestSlotDto>>> GetByUserAsync(string userId, int page, int size)
+        {
+            // tái sử dụng SearchAsync đã có: bỏ qua testDate
+            var paged = await _repo.SearchAsync(null, userId, page, size);
+
+            var result = new PaginatedList<TestSlotDto>(
+                            paged.Items.Select(_mapper.Map<TestSlotDto>).ToList(),
+                            paged.TotalCount, page, size);
+
+            return new ServiceResponse<PaginatedList<TestSlotDto>>
+            {
+                Data = result,
+                Success = true,
+                Message = "Lấy danh sách slot của user thành công"
+            };
+        }
     }
 }

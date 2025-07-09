@@ -179,5 +179,28 @@ namespace GenderHealthCare.Services.Services
                 Message = "Search completed."
             };
         }
+
+        public async Task<ServiceResponse<PaginatedList<QAThreadHistoryDto>>>
+           GetConversationAsync(string customerId,
+                                string consultantId,
+                                int page,
+                                int size)
+        {
+            var paged = await _repo.GetConversationAsync(customerId, consultantId, page, size);
+
+            var items = paged.Items
+                             .Select(_mapper.Map<QAThreadHistoryDto>)
+                             .ToList();
+
+            var result = new PaginatedList<QAThreadHistoryDto>(
+                            items, paged.TotalCount, page, size);
+
+            return new ServiceResponse<PaginatedList<QAThreadHistoryDto>>
+            {
+                Data = result,
+                Success = true,
+                Message = "Conversation retrieved."
+            };
+        }
     }
 }

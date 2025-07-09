@@ -50,5 +50,16 @@ namespace GenderHealthCare.Repositories.Repositories
         public void Update(QAThread t) => _ctx.QAThreads.Update(t);
         public void Delete(QAThread t) => _ctx.QAThreads.Remove(t);
         public Task SaveChangesAsync() => _ctx.SaveChangesAsync();
+
+        public async Task<PaginatedList<QAThread>> GetConversationAsync(
+           string customerId, string consultantId, int page, int size)
+        {
+            var q = Query()
+                    .Where(t => t.CustomerId == customerId &&
+                                t.ConsultantId == consultantId)
+                    .OrderBy(t => t.CreatedTime);          // chronological
+
+            return await PaginatedList<QAThread>.CreateAsync(q, page, size);
+        }
     }
 }
