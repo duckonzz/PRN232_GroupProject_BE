@@ -61,5 +61,15 @@ namespace GenderHealthCare.Controllers
             var result = await _service.DeleteAsync(id);
             return result.Success ? Ok(result) : NotFound(result);
         }
+
+        [HttpGet("customer/{customerId}")]
+        public async Task<IActionResult> GetByUserAsync(
+            string customerId,
+            [FromQuery] int page = 1,
+            [FromQuery] int size = 10)
+        {
+            var result = await _service.GetByUserAsync(customerId, page, size);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
     }
 }
