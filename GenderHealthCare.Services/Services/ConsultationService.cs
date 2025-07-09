@@ -15,12 +15,54 @@ using Microsoft.EntityFrameworkCore;
 namespace GenderHealthCare.Services.Services
 {
     public class ConsultationService : IConsultationsService
+
     {
         private readonly IUnitOfWork _unitOfWork;
 
         public ConsultationService(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
+        }
+
+        public async Task CancelConsultationAsync(string userId, string consultationId, string? reason, string role)
+        {
+            var consultationRepo = _unitOfWork.GetRepository<Consultation>();
+            var consultation = await consultationRepo.Entities
+                .Include(c => c.Slot)
+                .FirstOrDefaultAsync(c => c.Id == consultationId && !c.DeletedTime.HasValue) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Consultation not found or deleted");
+
+            if(consultation.Status != ConsultationStatus.Pending.ToString() && consultation.Status != ConsultationStatus.Confirmed.ToString())
+            {
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Only pending or confirmed consultations can be cancelled");
+            }
+
+            var isCustomer = role.Equals(Role.Customer.ToString(), StringComparison.OrdinalIgnoreCase) && consultation.UserId == userId;
+            var isConsultant = role.Equals(Role.Consultant.ToString(), StringComparison.OrdinalIgnoreCase) && consultation.ConsultantId == userId;
+
+            if (!isCustomer && !isConsultant)
+            {
+                throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You do not have permission to cancel this consultation");
+            }
+
+            consultation.Status = ConsultationStatus.Cancelled.ToString();
+            consultation.LastUpdatedTime = CoreHelper.SystemTimeNow;
+
+            // Optional: thêm Notes = reason nếu cần lưu lý do
+            if (!string.IsNullOrWhiteSpace(reason))
+            {
+                consultation.Reason += $" (Cancelled: {reason.Trim()})";
+            }
+
+            // Mở lại slot
+            if (consultation.Slot != null)
+            {
+                consultation.Slot.IsBooked = false;
+                consultation.Slot.BookedAt = null;
+                consultation.Slot.BookedByUserId = null;
+            }
+
+            consultationRepo.Update(consultation);
+            await _unitOfWork.SaveAsync();
         }
 
         public async Task ConfirmConsultationAsync(string consultantId, string consultationId)
