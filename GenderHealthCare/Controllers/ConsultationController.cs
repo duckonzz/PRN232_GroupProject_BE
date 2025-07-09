@@ -64,6 +64,23 @@ namespace GenderHealthCare.Controllers
         }
 
         /// <summary>
+        /// Cancel a consultation by the assigned customer or consultant
+        /// </summary>
+        /// <param name="id">The ID of the consultation to cancel</param>
+        /// <param name="request">Optional cancellation reason</param>
+        /// <returns>Success message</returns>
+        [Authorize(Roles = "Customer,Consultant")]
+        [HttpPut("{id}/cancel")]
+        public async Task<IActionResult> CancelConsultation(string id, [FromBody] CancelConsultationRequest? request)
+        {
+            var userId = _userContextService.GetUserId();
+            var role = _userContextService.GetUserRole();
+            await _consultationService.CancelConsultationAsync(userId, id, request?.Reason, role);
+
+            return Ok(BaseResponse.OkMessageResponse("Cancelled consultation successfully"));
+        }
+
+        /// <summary>
         /// Confirm a consultation that has been booked by a user.
         /// </summary>
         /// <param name="id">The ID of the consultation to confirm.</param>

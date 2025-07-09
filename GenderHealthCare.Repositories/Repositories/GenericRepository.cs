@@ -150,5 +150,16 @@ namespace GenderHealthCare.Repositories.Repositories
         {
             return await query.GetPaginatedList(index, pageSize);
         }
+
+        public void DeleteRange(List<T> obj)
+        {
+            _dbSet.RemoveRange(obj);
+        }
+
+        public async Task DeleteRangeAsync(List<T> obj)
+        {
+            _dbSet.RemoveRange(obj);
+            await Task.CompletedTask;
+        }
     }
 }
