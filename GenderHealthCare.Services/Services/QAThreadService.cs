@@ -197,5 +197,25 @@ namespace GenderHealthCare.Services.Services
                 Message = "Conversation retrieved."
             };
         }
+
+        public async Task<ServiceResponse<bool>> UpdateAnswerByCustomerIdAsync(string customerId, UpdateAnswerByCustomerDto dto)
+        {
+            // Lấy thread mới nhất của customer chưa được trả lời
+            var thread = await _repo.Query()
+                .Where(t => t.CustomerId == customerId && t.Answer == null)
+                .OrderByDescending(t => t.CreatedTime)
+                .FirstOrDefaultAsync();
+
+            if (thread is null)
+                return new ServiceResponse<bool> { Success = false, Message = "No unanswered question found for this customer." };
+
+            thread.Answer = dto.Answer;
+            thread.AnsweredAt = DateTimeOffset.UtcNow;
+
+            _repo.Update(thread);
+            await _repo.SaveChangesAsync();
+
+            return new ServiceResponse<bool> { Data = true, Success = true, Message = "Answer updated." };
+        }
     }
 }

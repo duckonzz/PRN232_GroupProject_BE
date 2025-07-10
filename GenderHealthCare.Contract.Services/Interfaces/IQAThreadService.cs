@@ -28,6 +28,8 @@ namespace GenderHealthCare.Contract.Services.Interfaces
         Task<ServiceResponse<PaginatedList<QAThreadHistoryDto>>> GetConversationAsync(
             string customerId,
             int page,
-            int size);  
+            int size);
+
+        Task<ServiceResponse<bool>> UpdateAnswerByCustomerIdAsync(string customerId, UpdateAnswerByCustomerDto dto);
     }
 }
