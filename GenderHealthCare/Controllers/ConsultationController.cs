@@ -57,8 +57,7 @@ namespace GenderHealthCare.Controllers
         [HttpGet("consultations")]
         public async Task<IActionResult> GetConsultations([FromQuery] ConsultationQueryObject query)
         {
-            var consultantId = await _userContextService.GetConsultantIdAsync();
-            var result = await _consultationService.GetPagedConsultationsAsync(consultantId, query);
+            var result = await _consultationService.GetPagedConsultationsAsync(query);
 
             return Ok(BaseResponseModel<BasePaginatedList<ConsultationResponse>>.OkDataResponse(result, "Retrieved consultations successfully"));
         }

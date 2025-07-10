@@ -116,7 +116,7 @@ namespace GenderHealthCare.Services.Services
         {
             var normalizedEmail = NormalizeEmail(request.Email);
 
-            var user = await _unitOfWork.GetRepository<User>().Entities.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
+            var user = await _unitOfWork.GetRepository<User>().Entities.Include(u => u.ConsultantProfile).FirstOrDefaultAsync(u => u.Email == normalizedEmail);
 
             if (user == null || !_passwordHasher.VerifyPassword(user.PasswordHash, request.Password))
             {
