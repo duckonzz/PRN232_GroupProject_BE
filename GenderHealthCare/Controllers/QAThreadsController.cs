@@ -80,5 +80,13 @@ namespace GenderHealthCare.Controllers
             var res = await _service.GetConversationAsync(customerId, page, size);
             return res.Success ? Ok(res) : BadRequest(res);
         }
+
+        [HttpPut("answer/customer/{customerId}")]
+        [Authorize(Roles = "Staff")]
+        public async Task<IActionResult> UpdateAnswerByCustomer(string customerId, [FromBody] UpdateAnswerByCustomerDto dto)
+        {
+            var res = await _service.UpdateAnswerByCustomerIdAsync(customerId, dto);
+            return res.Success ? Ok(res) : BadRequest(res);
+        }
     }
 }
