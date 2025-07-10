@@ -3,6 +3,7 @@
     public class ConsultationQueryObject : BaseQueryObject
     {
         public string? UserId { get; set; }
+        public string? ConsultantId { get; set; }
         public string? Status { get; set; }
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
