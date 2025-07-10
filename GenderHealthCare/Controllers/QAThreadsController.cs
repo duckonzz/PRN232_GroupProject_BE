@@ -1,5 +1,6 @@
 ﻿using GenderHealthCare.Contract.Services.Interfaces;
 using GenderHealthCare.ModelViews.QAThreadModel;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GenderHealthCare.Controllers
@@ -55,6 +56,7 @@ namespace GenderHealthCare.Controllers
         }
 
         [HttpPut("{id}/answer")]
+        [Authorize(Roles = "Staff")]
         public async Task<IActionResult> Answer(string id, [FromBody] AnswerQuestionDto dto)
         {
             var res = await _service.AnswerQuestionAsync(id, dto);

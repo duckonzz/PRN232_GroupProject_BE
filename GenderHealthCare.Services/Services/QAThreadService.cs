@@ -98,11 +98,6 @@ namespace GenderHealthCare.Services.Services
             if (thread == null)
                 return new ServiceResponse<bool> { Success = false, Message = "Thread not found." };
 
-            // Check nếu user là Staff
-            /*var staff = await _userRepo.GetByIdAsync(dto.StaffUserId);
-            if (staff == null || staff.Role.ToLower() != "staff")
-                return new ServiceResponse<bool> { Success = false, Message = "Only staff can answer questions." };*/
-
             if (thread.Answer != null)
                 return new ServiceResponse<bool> { Success = false, Message = "Thread already answered." };
 
