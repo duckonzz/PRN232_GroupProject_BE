@@ -38,12 +38,11 @@ namespace GenderHealthCare.Controllers
         [HttpGet("search")]
         public async Task<IActionResult> Search(
             [FromQuery] string? customerId,
-            [FromQuery] string? consultantId,
             [FromQuery] bool? answered,
             [FromQuery] int page = 1,
             [FromQuery] int size = 10)
         {
-            var res = await _service.SearchAsync(customerId, consultantId, answered, page, size);
+            var res = await _service.SearchAsync(customerId, answered, page, size);
             return res.Success ? Ok(res) : BadRequest(res);
         }
 
@@ -72,12 +71,11 @@ namespace GenderHealthCare.Controllers
 
         [HttpGet("conversation")]
         public async Task<IActionResult> GetConversation(
-        [FromQuery] string customerId,
-        [FromQuery] string consultantId,
-        [FromQuery] int page = 1,
-        [FromQuery] int size = 10)
+            [FromQuery] string customerId,
+            [FromQuery] int page = 1,
+            [FromQuery] int size = 10)
         {
-            var res = await _service.GetConversationAsync(customerId, consultantId, page, size);
+            var res = await _service.GetConversationAsync(customerId, page, size);
             return res.Success ? Ok(res) : BadRequest(res);
         }
     }

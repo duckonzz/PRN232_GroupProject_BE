@@ -8,9 +8,9 @@ namespace GenderHealthCare.Entity
         public string? Answer { get; set; }
         public DateTimeOffset? AnsweredAt { get; set; }
         public string CustomerId { get; set; }
-        public string ConsultantId { get; set; }
+        /*public string ConsultantId { get; set; }*/
 
         public User Customer { get; set; }
-        public Consultant Consultant { get; set; }
+        /*public Consultant Consultant { get; set; }*/
     }
 }

@@ -17,25 +17,18 @@ namespace GenderHealthCare.Repositories.Repositories
         public QAThreadRepository(GenderHealthCareDbContext ctx) => _ctx = ctx;
 
         public IQueryable<QAThread> Query() =>
-            _ctx.QAThreads
-                .Include(t => t.Customer)
-                .Include(t => t.Consultant)
-                    .ThenInclude(c => c.User);
+            _ctx.QAThreads.Include(t => t.Customer);
 
         public Task<QAThread?> GetByIdAsync(string id) =>
             Query().FirstOrDefaultAsync(t => t.Id == id);
 
         public async Task<PaginatedList<QAThread>> SearchAsync(
-            string? customerId, string? consultantId, bool? answered,
-            int page, int size)
+            string? customerId, bool? answered, int page, int size)
         {
             var q = Query();
 
             if (!string.IsNullOrWhiteSpace(customerId))
                 q = q.Where(t => t.CustomerId == customerId);
-
-            if (!string.IsNullOrWhiteSpace(consultantId))
-                q = q.Where(t => t.ConsultantId == consultantId);
 
             if (answered.HasValue)
                 q = answered.Value ? q.Where(t => t.Answer != null)
@@ -52,12 +45,11 @@ namespace GenderHealthCare.Repositories.Repositories
         public Task SaveChangesAsync() => _ctx.SaveChangesAsync();
 
         public async Task<PaginatedList<QAThread>> GetConversationAsync(
-           string customerId, string consultantId, int page, int size)
+           string customerId, int page, int size)
         {
             var q = Query()
-                    .Where(t => t.CustomerId == customerId &&
-                                t.ConsultantId == consultantId)
-                    .OrderBy(t => t.CreatedTime);          // chronological
+                    .Where(t => t.CustomerId == customerId)
+                    .OrderBy(t => t.CreatedTime); // chronological
 
             return await PaginatedList<QAThread>.CreateAsync(q, page, size);
         }

@@ -97,8 +97,7 @@ namespace GenderHealthCare.Services.Mapping
             CreateMap<QAThread, QAThreadDto>()
                 .ForMember(d => d.CustomerName,
                            o => o.MapFrom(s => s.Customer.FullName))
-                .ForMember(d => d.ConsultantName,
-                           o => o.MapFrom(s => s.Consultant.User.FullName));
+                ;
             CreateMap<QAThread, QAThreadHistoryDto>();
 
         }
