@@ -38,6 +38,7 @@ namespace GenderHealthCare.Services
             services.AddScoped<IBlogService, BlogService>();
             services.AddScoped<IHealthTestService, HealthTestService>();
             services.AddScoped<IHealthTestScheduleService, HealthTestScheduleService>();
+            services.AddScoped<IQAThreadService, QAThreadService>();
             services.AddScoped<JwtTokenGenerator>();
         }
         public static void AddRepository(this IServiceCollection services)
@@ -49,6 +50,7 @@ namespace GenderHealthCare.Services
             services.AddScoped<ITestBookingRepository, TestBookingRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IFeedbackRepository, FeedbackRepository>();
+            services.AddScoped<IQAThreadRepository, QAThreadRepository>();
         }
 
         public static void AddValidators(this IServiceCollection services)

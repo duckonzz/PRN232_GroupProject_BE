@@ -148,5 +148,24 @@ namespace GenderHealthCare.Services.Services
             return new ServiceResponse<PaginatedList<TestBookingDto>>
             { Data = result, Success = true, Message = "Search completed successfully" };
         }
+
+        public async Task<ServiceResponse<PaginatedList<TestBookingDto>>>
+            GetByUserAsync(string customerId, int page, int size)
+        {
+            var paged = await _repo.GetByUserAsync(customerId, page, size);
+
+            var items = paged.Items
+                             .Select(_mapper.Map<TestBookingDto>)
+                             .ToList();
+
+            var result = new PaginatedList<TestBookingDto>(items, paged.TotalCount, page, size);
+
+            return new ServiceResponse<PaginatedList<TestBookingDto>>
+            {
+                Data = result,
+                Success = true,
+                Message = "Lấy lịch sử booking thành công"
+            };
+        }
     }
 }

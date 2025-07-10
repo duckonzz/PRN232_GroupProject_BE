@@ -2,9 +2,11 @@
 using GenderHealthCare.Contract.Repositories.Interfaces;
 using GenderHealthCare.Contract.Repositories.PaggingItems;
 using GenderHealthCare.Contract.Services.Interfaces;
+using GenderHealthCare.Core.Enums;
 using GenderHealthCare.Core.Helpers;
 using GenderHealthCare.Entity;
 using GenderHealthCare.ModelViews.TestSlotModels;
+using GenderHealthCare.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -18,120 +20,227 @@ namespace GenderHealthCare.Services.Services
     {
         private readonly ITestSlotRepository _repo;
         private readonly IMapper _mapper;
+        private readonly GenderHealthCareDbContext _ctx;
 
-        public TestSlotService(ITestSlotRepository repo, IMapper mapper)
+        public TestSlotService(ITestSlotRepository repo,
+            GenderHealthCareDbContext ctx, IMapper mapper)
         {
             _repo = repo;
+            _ctx = ctx;
             _mapper = mapper;
         }
 
         /* ---------------- CREATE ---------------- */
-        /* ---------------- CREATE ---------------- */
-        public async Task<ServiceResponse<string>> CreateAsync(CreateTestSlotDto dto)
+        public async Task<ServiceResponse<CreateTestSlotResultDto>>
+            CreateAsync(CreateTestSlotDto dto)
         {
-            /* 1‑3. duration + date window checks (unchanged) */
+            /* 0. validate thời gian (giữ nguyên nhưng rút gọn) */
             if (dto.SlotEnd <= dto.SlotStart)
-                return new ServiceResponse<string> { Success = false, Message = "SlotEnd must be later than SlotStart." };
+                return Bad("SlotEnd must be later than SlotStart.");
 
             var today = DateTime.Today;
             var maxDate = today.AddMonths(1);
             if (dto.TestDate.Date < today)
-                return new ServiceResponse<string> { Success = false, Message = "TestDate cannot be in the past." };
+                return Bad("TestDate cannot be in the past.");
             if (dto.TestDate.Date > maxDate)
-                return new ServiceResponse<string> { Success = false, Message = "TestDate cannot be more than one month in the future." };
+                return Bad("TestDate cannot be more than one month in the future.");
 
-            /* --- 4. overlap check (unchanged) --- */
+            /* 1. Overlap check */
             bool overlap = await _repo.Query().AnyAsync(s =>
                 s.HealthTestId == dto.HealthTestId &&
                 s.TestDate.Date == dto.TestDate.Date &&
                 dto.SlotStart < s.SlotEnd &&
                 dto.SlotEnd > s.SlotStart);
 
-            if (overlap)
-                return new ServiceResponse<string> { Success = false, Message = "Another slot overlaps this time range. Choose a different slot." };
+            if (overlap) return Bad("Another slot overlaps this time range.");
 
-            /* --- 5. start time must be in the future if date == today --- */
-            if (dto.TestDate.Date == today && dto.SlotStart <= DateTime.Now.TimeOfDay)
-                return new ServiceResponse<string>
+            /* 2. Nếu truyền customerId thì phải tồn tại User */
+            if (dto.CustomerId != null &&
+                !await _ctx.Users.AnyAsync(u => u.Id == dto.CustomerId))
+                return Bad("Customer not found.");
+
+            /* 3. Transaction: tạo Slot (+ Booking nếu có customer) */
+            await using var tx = await _ctx.Database.BeginTransactionAsync();
+
+            try
+            {
+                var slot = _mapper.Map<TestSlot>(dto);
+                slot.IsBooked = dto.CustomerId != null;
+                slot.BookedByUserId = dto.CustomerId;
+                slot.BookedAt = dto.CustomerId != null ? DateTimeOffset.UtcNow : null;
+
+                await _repo.AddAsync(slot);
+
+                string? bookingId = null;
+                if (dto.CustomerId != null)
                 {
-                    Success = false,
-                    Message = "SlotStart must be later than the current time."
+                    var booking = new TestBooking
+                    {
+                        SlotId = slot.Id,
+                        CustomerId = dto.CustomerId,
+                        Status = TestBookingStatus.Pending.ToString()
+                    };
+                    await _ctx.TestBookings.AddAsync(booking);
+                    bookingId = booking.Id;
+                }
+
+                await _repo.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                var result = new CreateTestSlotResultDto
+                {
+                    SlotId = slot.Id,
+                    BookingId = bookingId
                 };
 
-            /* persist */
-            var entity = _mapper.Map<TestSlot>(dto);
-            await _repo.AddAsync(entity);
-            await _repo.SaveChangesAsync();
+                return new ServiceResponse<CreateTestSlotResultDto>
+                {
+                    Data = result,
+                    Success = true,
+                    Message = dto.CustomerId != null
+                              ? "Slot created & booked successfully."
+                              : "Slot created successfully."
+                };
+            }
+            catch (Exception ex)
+            {
+                await tx.RollbackAsync();
+                return Bad("Database error. Please retry.");
+            }
 
-            return new ServiceResponse<string> { Data = entity.Id, Success = true, Message = "Test slot created successfully" };
+            /* local helper */
+            ServiceResponse<CreateTestSlotResultDto> Bad(string msg) =>
+                new() { Success = false, Message = msg };
         }
 
         /* ---------------- UPDATE ---------------- */
-        public async Task<ServiceResponse<bool>> UpdateAsync(string id, UpdateTestSlotDto dto)
+        public async Task<ServiceResponse<bool>>
+    UpdateAsync(string id, UpdateTestSlotDto dto)
         {
-            var entity = await _repo.GetByIdAsync(id);
-            if (entity is null)
-                return new ServiceResponse<bool> { Success = false, Message = "Test slot not found." };
+            /* 0. Lấy slot hiện tại */
+            var slot = await _repo.GetByIdAsync(id);
+            if (slot == null) return Fail("Test slot not found.");
 
-            /* duration + date window */
+            /* -------- 1. VALIDATE KHUNG GIỜ & CHỒNG LẤN (dù book hay không) -------- */
             if (dto.SlotEnd <= dto.SlotStart)
-                return new ServiceResponse<bool> { Success = false, Message = "SlotEnd must be later than SlotStart." };
+                return Fail("SlotEnd must be later than SlotStart.");
 
             var today = DateTime.Today;
-            var maxDate = today.AddMonths(1);
             if (dto.TestDate.Date < today)
-                return new ServiceResponse<bool> { Success = false, Message = "TestDate cannot be in the past." };
-            if (dto.TestDate.Date > maxDate)
-                return new ServiceResponse<bool> { Success = false, Message = "TestDate cannot be more than one month in the future." };
+                return Fail("TestDate cannot be in the past.");
+            if (dto.TestDate.Date > today.AddMonths(1))
+                return Fail("TestDate cannot be more than one month in the future.");
 
-            /* overlap check (exclude self) */
-            bool overlap = await _repo.Query().AnyAsync(s =>
-                s.Id != entity.Id &&
-                s.HealthTestId == entity.HealthTestId &&
-                s.TestDate.Date == dto.TestDate.Date &&
-                dto.SlotStart < s.SlotEnd &&
-                dto.SlotEnd > s.SlotStart);
+            /* Không kiểm tra overlap nếu slot đã booked & client không đổi giờ */
+            bool timeChanged = slot.TestDate != dto.TestDate ||
+                               slot.SlotStart != dto.SlotStart ||
+                               slot.SlotEnd != dto.SlotEnd ||
+                               slot.HealthTestId != dto.HealthTestId;
 
-            if (overlap)
-                return new ServiceResponse<bool> { Success = false, Message = "Another slot overlaps this time range. Choose a different slot." };
+            if (timeChanged)
+            {
+                // chỉ cho đổi thời gian khi slot CHƯA booked
+                if (slot.IsBooked)
+                    return Fail("This slot is already booked; you cannot change its time.");
 
-            /* --- start time not in the past (today) --- */
-            if (dto.TestDate.Date == today && dto.SlotStart <= DateTime.Now.TimeOfDay)
-                return new ServiceResponse<bool>
+                bool overlap = await _repo.Query().AnyAsync(s =>
+                    s.Id != slot.Id &&
+                    s.HealthTestId == dto.HealthTestId &&
+                    s.TestDate.Date == dto.TestDate.Date &&
+                    dto.SlotStart < s.SlotEnd &&
+                    dto.SlotEnd > s.SlotStart);
+
+                if (overlap) return Fail("Another slot overlaps this time range.");
+            }
+
+            /* -------- 2. ÁP DỤNG UPDATE THUỘC TÍNH CƠ BẢN -------- */
+            slot.TestDate = dto.TestDate;
+            slot.SlotStart = dto.SlotStart;
+            slot.SlotEnd = dto.SlotEnd;
+            slot.HealthTestId = dto.HealthTestId;
+
+            /* -------- 3. XỬ LÝ BOOKING (nếu client yêu cầu) -------- */
+            if (dto.IsBooked && !string.IsNullOrWhiteSpace(dto.BookedByUserId))
+            {
+                // A. Nếu slot chưa booked → tạo booking mới
+                if (!slot.IsBooked)
                 {
-                    Success = false,
-                    Message = "SlotStart must be later than the current time."
-                };
+                    // 3A‑1. kiểm tra user
+                    var userExists = await _ctx.Users.AnyAsync(u => u.Id == dto.BookedByUserId);
+                    if (!userExists) return Fail("Customer not found.");
 
-            /* apply & save */
-            _mapper.Map(dto, entity);
+                    // 3A‑2. đánh dấu slot đã đặt
+                    slot.IsBooked = true;
+                    slot.BookedByUserId = dto.BookedByUserId;
+                    slot.BookedAt = DateTimeOffset.UtcNow;
+
+                    // 3A‑3. sinh record TestBooking
+                    var booking = new TestBooking
+                    {
+                        SlotId = slot.Id,
+                        CustomerId = dto.BookedByUserId,
+                        Status = TestBookingStatus.Pending.ToString()
+                    };
+                    await _ctx.TestBookings.AddAsync(booking);
+                }
+                // B. Nếu slot đã booked rồi nhưng đổi user → không cho phép ở đây
+                else if (slot.BookedByUserId != dto.BookedByUserId)
+                {
+                    return Fail("Slot already booked by another user. Cannot change booking here.");
+                }
+            }
+            else
+            {
+                /* Nếu client gửi IsBooked=false => chỉ cho khi slot hiện cũng chưa booked */
+                if (!dto.IsBooked && slot.IsBooked)
+                    return Fail("You cannot un-book this slot via update endpoint.");
+            }
+
+            /* -------- 4. SAVE -------- */
             await _repo.SaveChangesAsync();
+            return new ServiceResponse<bool>
+            {
+                Data = true,
+                Success = true,
+                Message = "Updated successfully."
+            };
 
-            return new ServiceResponse<bool> { Data = true, Success = true, Message = "Test slot updated successfully" };
+            /* helper */
+            ServiceResponse<bool> Fail(string m) => new() { Success = false, Message = m };
         }
 
 
         /* ---------------- DELETE ---------------- */
         public async Task<ServiceResponse<bool>> DeleteAsync(string id)
         {
-            var entity = await _repo.GetByIdAsync(id);
-            if (entity is null)
+            var slot = await _repo.GetByIdAsync(id);
+            if (slot is null)
                 return new ServiceResponse<bool>
                 {
                     Success = false,
                     Message = "Test slot not found."
                 };
 
-            _repo.Delete(entity);
+            /* ==== NEW: chặn xóa khi slot đã được đặt ==== */
+            if (slot.IsBooked)
+                return new ServiceResponse<bool>
+                {
+                    Success = false,
+                    Message = "Cannot delete: this slot has already been booked."
+                };
+
+            /* Nếu tới đây => slot đang trống, cho phép xóa */
+            _repo.Delete(slot);
             await _repo.SaveChangesAsync();
 
             return new ServiceResponse<bool>
             {
                 Data = true,
                 Success = true,
-                Message = "Test slot deleted successfully"
+                Message = "Test slot deleted successfully."
             };
         }
+
 
         /* ---------------- READ ---------------- */
         public async Task<ServiceResponse<TestSlotDto>> GetByIdAsync(string id)
@@ -180,6 +289,23 @@ namespace GenderHealthCare.Services.Services
                 Data = result,
                 Success = true,
                 Message = "Search completed successfully"
+            };
+        }
+
+        public async Task<ServiceResponse<PaginatedList<TestSlotDto>>> GetByUserAsync(string userId, int page, int size)
+        {
+            // tái sử dụng SearchAsync đã có: bỏ qua testDate
+            var paged = await _repo.SearchAsync(null, userId, page, size);
+
+            var result = new PaginatedList<TestSlotDto>(
+                            paged.Items.Select(_mapper.Map<TestSlotDto>).ToList(),
+                            paged.TotalCount, page, size);
+
+            return new ServiceResponse<PaginatedList<TestSlotDto>>
+            {
+                Data = result,
+                Success = true,
+                Message = "Lấy danh sách slot của user thành công"
             };
         }
     }

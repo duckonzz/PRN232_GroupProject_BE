@@ -46,5 +46,16 @@ namespace GenderHealthCare.Repositories.Repositories
 
             return await PaginatedList<TestSlot>.CreateAsync(q, page, size);
         }
+
+        public async Task<PaginatedList<TestSlot>> GetByUserAsync(
+            string userId, int page, int size)
+        {
+            var q = Query()
+                    .Where(s => s.BookedByUserId == userId)
+                    .OrderByDescending(s => s.TestDate)
+                    .ThenBy(s => s.SlotStart);
+
+            return await PaginatedList<TestSlot>.CreateAsync(q, page, size);
+        }
     }
 }

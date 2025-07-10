@@ -16,5 +16,8 @@ namespace GenderHealthCare.Contract.Repositories.Interfaces
         void Delete(TestBooking entity);
         Task SaveChangesAsync();
         Task<PaginatedList<TestBooking>> SearchAsync(string? status, string? customerId, int page, int size);
+
+        Task<PaginatedList<TestBooking>> GetByUserAsync(
+            string customerId, int page, int size);
     }
 }

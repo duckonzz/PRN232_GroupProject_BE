@@ -9,11 +9,6 @@ using GenderHealthCare.Entity;
 using GenderHealthCare.ModelViews.ConsultantScheduleModels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GenderHealthCare.Services.Services
 {
@@ -22,17 +17,20 @@ namespace GenderHealthCare.Services.Services
         private readonly IConsultantScheduleRepository _scheduleRepo;
         private readonly IConsultantRepository _consultantRepo;
         private readonly IAvailableSlot _availableSlotService;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
         public ConsultantScheduleService(
             IConsultantScheduleRepository scheduleRepo,
             IConsultantRepository consultantRepo,
             IAvailableSlot availableSlotService,
+            IUnitOfWork unitOfWork,
             IMapper mapper)
         {
             _scheduleRepo = scheduleRepo;
             _consultantRepo = consultantRepo;
             _availableSlotService = availableSlotService;
+            _unitOfWork = unitOfWork;
             _mapper = mapper;
         }
 
@@ -90,11 +88,16 @@ namespace GenderHealthCare.Services.Services
         /* ---------- UPDATE ---------- */
         public async Task<ServiceResponse<bool>> UpdateAsync(string id, UpdateConsultantScheduleDto dto)
         {
-            var entity = await _scheduleRepo.Query().FirstOrDefaultAsync(s => s.Id == id);
+            var slotRepo = _unitOfWork.GetRepository<AvailableSlot>();
+
+            var entity = await _scheduleRepo.Query()
+                .Include(s => s.Slots)
+                .FirstOrDefaultAsync(s => s.Id == id);
+
             if (entity is null)
                 return new ServiceResponse<bool> { Success = false, Message = "Schedule not found." };
 
-            /* consultant check + basic validation (unchanged) */
+            // Consultant check
             string targetConsultantId = entity.ConsultantId;
             if (!string.IsNullOrWhiteSpace(dto.ConsultantId) && dto.ConsultantId != entity.ConsultantId)
             {
@@ -103,6 +106,7 @@ namespace GenderHealthCare.Services.Services
                 targetConsultantId = dto.ConsultantId;
             }
 
+            // Validation
             if (dto.EndTime <= dto.StartTime)
                 return new ServiceResponse<bool> { Success = false, Message = "EndTime must be later than StartTime." };
 
@@ -113,15 +117,10 @@ namespace GenderHealthCare.Services.Services
             if (dto.AvailableDate.Date > maxDate)
                 return new ServiceResponse<bool> { Success = false, Message = "AvailableDate cannot be more than one month in the future." };
 
-            /* ---------- NEW: start time not in past when date == today ---------- */
             if (dto.AvailableDate.Date == today && dto.StartTime <= DateTime.Now.TimeOfDay)
-                return new ServiceResponse<bool>
-                {
-                    Success = false,
-                    Message = "StartTime must be later than the current time."
-                };
+                return new ServiceResponse<bool> { Success = false, Message = "StartTime must be later than the current time." };
 
-            /* overlap check (exclude self) */
+            // Overlap check
             bool overlap = await _scheduleRepo.Query().AnyAsync(s =>
                 s.Id != entity.Id &&
                 s.ConsultantId == targetConsultantId &&
@@ -130,39 +129,72 @@ namespace GenderHealthCare.Services.Services
                 dto.EndTime > s.StartTime);
 
             if (overlap)
-                return new ServiceResponse<bool> { Success = false, Message = "This consultant already has a schedule that overlaps the selected time. Please choose a different slot." };
+                return new ServiceResponse<bool> { Success = false, Message = "This consultant already has a schedule that overlaps the selected time." };
 
-            /* apply & save */
+            // Kiểm tra có slot nào đã được book chưa
+            if (entity.Slots?.Any(s => s.IsBooked) == true)
+            {
+                return new ServiceResponse<bool> { Success = false, Message = "Some slots are already booked. Cannot update this schedule." };
+            }
+
+            // Xoá slot cũ
+            if (entity.Slots?.Any() == true)
+                slotRepo.DeleteRange(entity.Slots.ToList());
+
+            // Cập nhật schedule
             _mapper.Map(dto, entity);
             entity.ConsultantId = targetConsultantId;
             entity.AvailableDate = entity.AvailableDate.Date;
             _scheduleRepo.Update(entity);
             await _scheduleRepo.SaveChangesAsync();
 
+            // Tạo lại slots
+            var slotDuration = TimeSpan.FromMinutes(30);
+            var time = entity.StartTime;
+            var slots = new List<AvailableSlot>();
+            while (time + slotDuration <= entity.EndTime)
+            {
+                slots.Add(new AvailableSlot
+                {
+                    ScheduleId = entity.Id,
+                    SlotStart = time,
+                    SlotEnd = time + slotDuration
+                });
+                time += slotDuration;
+            }
+
+            await slotRepo.InsertRangeAsync(slots);
+            await _unitOfWork.SaveAsync();
+
             return new ServiceResponse<bool> { Data = true, Success = true, Message = "Schedule updated successfully" };
         }
+
 
         /* ---------- DELETE ---------- */
         public async Task<ServiceResponse<bool>> DeleteAsync(string id)
         {
-            var entity = await _scheduleRepo.GetByIdAsync(id);
-            if (entity is null)
-                return new ServiceResponse<bool>
-                {
-                    Success = false,
-                    Message = "Schedule not found."
-                };
+            var schedule = await _scheduleRepo.Query()
+                .Include(s => s.Slots)
+                .FirstOrDefaultAsync(s => s.Id == id);
 
-            _scheduleRepo.Delete(entity);
-            await _scheduleRepo.SaveChangesAsync();
+            if (schedule == null)
+                return new ServiceResponse<bool> { Success = false, Message = "Schedule not found." };
 
-            return new ServiceResponse<bool>
+            if (schedule.Slots?.Any(s => s.IsBooked) == true)
             {
-                Data = true,
-                Success = true,
-                Message = "Schedule deleted successfully"
-            };
+                return new ServiceResponse<bool> { Success = false, Message = "Cannot delete schedule because some slots are already booked." };
+            }
+
+            // Xoá slot trống
+            if (schedule.Slots?.Any() == true)
+                await _unitOfWork.GetRepository<AvailableSlot>().DeleteRangeAsync(schedule.Slots.ToList());
+
+            _scheduleRepo.Delete(schedule);
+            await _unitOfWork.SaveAsync();
+
+            return new ServiceResponse<bool> { Data = true, Success = true, Message = "Schedule deleted successfully" };
         }
+
 
         /* ---------- READ ---------- */
         public async Task<ServiceResponse<ConsultantScheduleDto>> GetByIdAsync(string id)

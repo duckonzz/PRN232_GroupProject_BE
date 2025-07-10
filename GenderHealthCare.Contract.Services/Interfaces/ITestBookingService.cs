@@ -14,5 +14,8 @@ namespace GenderHealthCare.Contract.Services.Interfaces
         Task<ServiceResponse<PaginatedList<TestBookingDto>>> GetAllAsync(int page, int size);
         Task<ServiceResponse<PaginatedList<TestBookingDto>>> SearchAsync(
             string? status, string? customerId, int page, int size);
+
+        Task<ServiceResponse<PaginatedList<TestBookingDto>>>
+            GetByUserAsync(string customerId, int page, int size);
     }
 }

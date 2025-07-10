@@ -19,6 +19,7 @@ namespace GenderHealthCare.Services.Infrastructure
             {
                 new Claim("id", user.Id),
                 new Claim("role", user.Role),
+                new Claim("consultant_id", user.ConsultantProfile?.Id ?? string.Empty),
                 new Claim("token_type", "access")
             };
 
