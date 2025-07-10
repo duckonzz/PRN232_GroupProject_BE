@@ -41,10 +41,6 @@ namespace GenderHealthCare.Repositories.EntityConfiguration
                    .HasForeignKey(c => c.ConsultantId)
                    .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasMany(x => x.QAThreads)
-                   .WithOne(q => q.Consultant)
-                   .HasForeignKey(q => q.ConsultantId)
-                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

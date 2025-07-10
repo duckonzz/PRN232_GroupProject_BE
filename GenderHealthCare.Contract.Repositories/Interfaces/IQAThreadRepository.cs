@@ -15,9 +15,9 @@ namespace GenderHealthCare.Contract.Repositories.Interfaces
 
         Task<PaginatedList<QAThread>> SearchAsync(
             string? customerId,
-            string? consultantId,
             bool? answered,
-            int page, int size);
+            int page,
+            int size);
 
         Task AddAsync(QAThread thread);
         void Update(QAThread thread);
@@ -25,6 +25,8 @@ namespace GenderHealthCare.Contract.Repositories.Interfaces
         Task SaveChangesAsync();
 
         Task<PaginatedList<QAThread>> GetConversationAsync(
-           string customerId, string consultantId, int page, int size);
+            string customerId,
+            int page,
+            int size);
     }
 }

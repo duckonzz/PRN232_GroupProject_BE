@@ -9,6 +9,6 @@ namespace GenderHealthCare.ModelViews.QAThreadModel
     public class AnswerQuestionDto
     {
         public string Answer { get; set; }
-        public string ConsultantId { get; set; }   // để xác thực đúng BS trả lời
+        /*public string StaffUserId { get; set; } // Staff trả lời*/
     }
 }
