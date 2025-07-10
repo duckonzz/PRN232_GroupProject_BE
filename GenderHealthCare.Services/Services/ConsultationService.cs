@@ -124,7 +124,7 @@ namespace GenderHealthCare.Services.Services
             return fullConsultation!.ToConsultationDto();
         }
 
-        public async Task<BasePaginatedList<ConsultationResponse>> GetPagedConsultationsAsync(string consultantId, ConsultationQueryObject query)
+        public async Task<BasePaginatedList<ConsultationResponse>> GetPagedConsultationsAsync(ConsultationQueryObject query)
         {
             var consultationRepo = _unitOfWork.GetRepository<Consultation>();
 
@@ -135,10 +135,13 @@ namespace GenderHealthCare.Services.Services
                 .Include(c => c.User)
                 .Include(c => c.Consultant)
                     .ThenInclude(con => con.User)
-                .Where(c => !c.DeletedTime.HasValue && c.ConsultantId == consultantId);
+                .Where(c => !c.DeletedTime.HasValue);
 
             if (!string.IsNullOrWhiteSpace(query.UserId))
                 queryable = queryable.Where(c => c.UserId == query.UserId);
+
+            if (!string.IsNullOrWhiteSpace(query.ConsultantId))
+                queryable = queryable.Where(c => c.ConsultantId == query.ConsultantId);
 
             if (!string.IsNullOrWhiteSpace(query.Status))
                 queryable = queryable.Where(c => c.Status == query.Status);
