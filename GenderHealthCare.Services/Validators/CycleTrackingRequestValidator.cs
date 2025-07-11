@@ -9,8 +9,8 @@ namespace GenderHealthCare.Services.Validators
         {
             RuleFor(x => x.StartDate)
                 .NotEmpty().WithMessage("Start date is required")
-                .GreaterThan(DateTime.UtcNow.AddYears(-1)).WithMessage("Start date must not be too far in the past")
-                .LessThan(DateTime.UtcNow.AddYears(1)).WithMessage("Start date must not be too far in the future");
+                .GreaterThanOrEqualTo(DateTime.UtcNow.Date.AddYears(-1)).WithMessage("Start date must not be too far in the past")
+                .LessThanOrEqualTo(DateTime.UtcNow.Date).WithMessage("Start date must not be in the future");
 
             RuleFor(x => x.CycleLength)
                 .GreaterThan(20).WithMessage("Cycle length must be at least 21 days")
