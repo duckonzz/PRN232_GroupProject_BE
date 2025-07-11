@@ -55,6 +55,58 @@ namespace GenderHealthCare.Services.Services
                 HealthTestId = model.HealthTestId ?? throw new ArgumentNullException(nameof(model.HealthTestId)),
             };
 
+            // ✅ Check: DaysOfWeek phải match ít nhất 1 ngày trong range
+            var daysToGenerate = Enumerable.Range(0, (schedule.EndDate - schedule.StartDate).Days + 1)
+                .Select(offset => schedule.StartDate.AddDays(offset))
+                .Where(date => model.DaysOfWeek.Contains(date.DayOfWeek.ToString().Substring(0, 3)))
+                .ToList();
+
+            if (!daysToGenerate.Any())
+            {
+                throw new InvalidOperationException(
+                    "No slots generated because DaysOfWeek do not match any days in the selected date range."
+                );
+            }
+
+            // ✅ Check: Duplicate exact same schedule
+            var scheduleRepo = _unitOfWork.GetRepository<HealthTestSchedule>();
+
+            bool exactSameExists = await scheduleRepo.Entities.AnyAsync(x =>
+                x.HealthTestId == schedule.HealthTestId &&
+                x.StartDate == schedule.StartDate &&
+                x.EndDate == schedule.EndDate &&
+                x.SlotStart == schedule.SlotStart &&
+                x.SlotEnd == schedule.SlotEnd &&
+                x.SlotDurationInMinutes == schedule.SlotDurationInMinutes &&
+                x.DaysOfWeek == schedule.DaysOfWeek
+            );
+
+            if (exactSameExists)
+            {
+                throw new InvalidOperationException(
+                    "A schedule with the same configuration already exists for this Health Test."
+                );
+            }
+
+            // ✅ Check: Overlapping time slot with same HealthTestId
+            bool isOverlapping = await scheduleRepo.AnyAsync(x =>
+                x.HealthTestId == schedule.HealthTestId &&
+                // Check overlapping date range
+                schedule.StartDate <= x.EndDate && schedule.EndDate >= x.StartDate &&
+                // Check overlapping slot time range
+                schedule.SlotStart < x.SlotEnd && schedule.SlotEnd > x.SlotStart &&
+                // Check overlapping DaysOfWeek
+                schedule.DaysOfWeek.Split(',').Intersect(x.DaysOfWeek.Split(',')).Any()
+            );
+
+            if (isOverlapping)
+            {
+                throw new InvalidOperationException(
+                    "This schedule overlaps with an existing schedule for this Health Test."
+                );
+            }
+
+
             await _unitOfWork.GetRepository<HealthTestSchedule>().InsertAsync(schedule);
             await _unitOfWork.SaveAsync();
 
