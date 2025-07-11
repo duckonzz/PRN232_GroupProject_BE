@@ -6,7 +6,8 @@ namespace GenderHealthCare.Contract.Services.Interfaces
 {
     public interface ITestSlotService
     {
-        Task<ServiceResponse<CreateTestSlotResultDto>> CreateAsync(CreateTestSlotDto dto);
+        Task<ServiceResponse<CreateTestSlotResultDto>> UpdateByIdAsync(string id, UpdateTestSlotBookingDto dto);
+
         Task<ServiceResponse<bool>> UpdateAsync(string id, UpdateTestSlotDto dto);
         Task<ServiceResponse<bool>> DeleteAsync(string id);
 

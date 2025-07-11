@@ -30,54 +30,38 @@ namespace GenderHealthCare.Services.Services
             _mapper = mapper;
         }
 
-        /* ---------------- CREATE ---------------- */
-        public async Task<ServiceResponse<CreateTestSlotResultDto>>
-            CreateAsync(CreateTestSlotDto dto)
+        public async Task<ServiceResponse<CreateTestSlotResultDto>> UpdateByIdAsync(string id, UpdateTestSlotBookingDto dto)
         {
-            /* 0. validate thời gian (giữ nguyên nhưng rút gọn) */
-            if (dto.SlotEnd <= dto.SlotStart)
-                return Bad("SlotEnd must be later than SlotStart.");
+            var slot = await _repo.GetByIdAsync(id);
+            if (slot == null)
+                return Bad("TestSlot not found.");
 
-            var today = DateTime.Today;
-            var maxDate = today.AddMonths(1);
-            if (dto.TestDate.Date < today)
-                return Bad("TestDate cannot be in the past.");
-            if (dto.TestDate.Date > maxDate)
-                return Bad("TestDate cannot be more than one month in the future.");
+            // Slot đã được đặt rồi → không cho phép đặt lại
+            if (slot.IsBooked)
+                return Bad("This slot has already been booked.");
 
-            /* 1. Overlap check */
-            bool overlap = await _repo.Query().AnyAsync(s =>
-                s.HealthTestId == dto.HealthTestId &&
-                s.TestDate.Date == dto.TestDate.Date &&
-                dto.SlotStart < s.SlotEnd &&
-                dto.SlotEnd > s.SlotStart);
+            // Nếu có BookedByUserId thì kiểm tra user tồn tại
+            if (dto.BookedByUserId != null &&
+                !await _ctx.Users.AnyAsync(u => u.Id == dto.BookedByUserId))
+                return Bad("Booked user not found.");
 
-            if (overlap) return Bad("Another slot overlaps this time range.");
-
-            /* 2. Nếu truyền customerId thì phải tồn tại User */
-            if (dto.CustomerId != null &&
-                !await _ctx.Users.AnyAsync(u => u.Id == dto.CustomerId))
-                return Bad("Customer not found.");
-
-            /* 3. Transaction: tạo Slot (+ Booking nếu có customer) */
             await using var tx = await _ctx.Database.BeginTransactionAsync();
 
             try
             {
-                var slot = _mapper.Map<TestSlot>(dto);
-                slot.IsBooked = dto.CustomerId != null;
-                slot.BookedByUserId = dto.CustomerId;
-                slot.BookedAt = dto.CustomerId != null ? DateTimeOffset.UtcNow : null;
-
-                await _repo.AddAsync(slot);
+                // Cập nhật trạng thái booking
+                slot.IsBooked = dto.BookedByUserId != null;
+                slot.BookedByUserId = dto.BookedByUserId;
+                slot.BookedAt = dto.BookedByUserId != null ? DateTimeOffset.UtcNow : null;
 
                 string? bookingId = null;
-                if (dto.CustomerId != null)
+
+                if (dto.BookedByUserId != null)
                 {
                     var booking = new TestBooking
                     {
                         SlotId = slot.Id,
-                        CustomerId = dto.CustomerId,
+                        CustomerId = dto.BookedByUserId,
                         Status = TestBookingStatus.Pending.ToString()
                     };
                     await _ctx.TestBookings.AddAsync(booking);
@@ -97,21 +81,21 @@ namespace GenderHealthCare.Services.Services
                 {
                     Data = result,
                     Success = true,
-                    Message = dto.CustomerId != null
-                              ? "Slot created & booked successfully."
-                              : "Slot created successfully."
+                    Message = dto.BookedByUserId != null
+                              ? "Slot updated & booked successfully."
+                              : "Slot updated successfully."
                 };
             }
-            catch (Exception ex)
+            catch
             {
                 await tx.RollbackAsync();
                 return Bad("Database error. Please retry.");
             }
 
-            /* local helper */
             ServiceResponse<CreateTestSlotResultDto> Bad(string msg) =>
                 new() { Success = false, Message = msg };
         }
+
 
         /* ---------------- UPDATE ---------------- */
         public async Task<ServiceResponse<bool>>
