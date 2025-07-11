@@ -75,7 +75,7 @@ namespace GenderHealthCare.Services.Mapping
 
 
             CreateMap<TestSlot, TestSlotDto>();
-            CreateMap<CreateTestSlotDto, TestSlot>()
+            CreateMap<UpdateTestSlotBookingDto, TestSlot>()
             .ForMember(d => d.Id, opt => opt.Ignore())
             .ForMember(d => d.IsBooked, opt => opt.Ignore())
             .ForMember(d => d.BookedByUserId, opt => opt.Ignore())
