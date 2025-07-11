@@ -7,7 +7,8 @@ namespace GenderHealthCare.Contract.Services.Interfaces
     public interface IHealthTestScheduleService
     {
         // Basic CRUD operations
-        Task<HealthTestScheduleResponseModel> CreateScheduleAsync(HealthTestScheduleRequestModel model);
+        //Task<HealthTestScheduleResponseModel> CreateScheduleAsync(HealthTestScheduleRequestModel model);
+        Task<List<HealthTestScheduleResponseModel>> CreateScheduleAsync(HealthTestScheduleRequestModel model);
         Task<HealthTestScheduleResponseModel?> GetScheduleByIdAsync(string id);
         Task<List<HealthTestScheduleResponseModel>> GetAllSchedulesAsync();
         Task<bool> UpdateScheduleAsync(string id, HealthTestScheduleRequestModel model);
