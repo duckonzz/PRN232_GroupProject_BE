@@ -20,7 +20,7 @@ namespace GenderHealthCare.Services.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<List<HealthTestScheduleResponseModel>> CreateScheduleAsync(HealthTestScheduleRequestModel model)
+        public async Task<HealthTestScheduleResponseModel> CreateScheduleAsync(HealthTestScheduleRequestModel model)
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
@@ -53,7 +53,6 @@ namespace GenderHealthCare.Services.Services
                 SlotDurationInMinutes = model.SlotDurationInMinutes,
                 DaysOfWeek = string.Join(",", model.DaysOfWeek),
                 HealthTestId = model.HealthTestId ?? throw new ArgumentNullException(nameof(model.HealthTestId)),
-                CreatedTime = DateTimeOffset.UtcNow
             };
 
             await _unitOfWork.GetRepository<HealthTestSchedule>().InsertAsync(schedule);
