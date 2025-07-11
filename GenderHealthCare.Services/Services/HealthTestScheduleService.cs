@@ -20,9 +20,8 @@ namespace GenderHealthCare.Services.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<HealthTestScheduleResponseModel> CreateScheduleAsync(HealthTestScheduleRequestModel model)
+        public async Task<List<HealthTestScheduleResponseModel>> CreateScheduleAsync(HealthTestScheduleRequestModel model)
         {
-            // Validate input
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
 
@@ -32,42 +31,67 @@ namespace GenderHealthCare.Services.Services
             if (model.SlotStart >= model.SlotEnd)
                 throw new ArgumentException("SlotEnd must be greater than SlotStart");
 
+            if (model.SlotDurationInMinutes <= 0)
+                throw new ArgumentException("Slot duration must be greater than 0");
+
             if (model.DaysOfWeek == null || !model.DaysOfWeek.Any())
                 throw new ArgumentException("At least one day of week must be specified");
 
-            var expectedDuration = TimeSpan.FromMinutes(model.SlotDurationInMinutes);
-            var actualDuration = model.SlotEnd - model.SlotStart;
-            var actualMinutes = (int)actualDuration.TotalMinutes;
-
-            if (actualMinutes != model.SlotDurationInMinutes)
-            {
-                throw new ArgumentException($"The duration between SlotStart and SlotEnd must be exactly {model.SlotDurationInMinutes} minutes.");
-            }
-
-            // Validate each day
             var validDays = new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
             var invalidDays = model.DaysOfWeek.Except(validDays).ToList();
             if (invalidDays.Any())
                 throw new ArgumentException($"Invalid days specified: {string.Join(", ", invalidDays)}");
 
-            var schedule = new HealthTestSchedule
-            {
-                Id = Guid.NewGuid().ToString(),
-                StartDate = model.StartDate.Date, // Ensure we store only date part
-                EndDate = model.EndDate.Date,     // Ensure we store only date part
-                SlotStart = model.SlotStart,
-                SlotEnd = model.SlotEnd,
-                SlotDurationInMinutes = model.SlotDurationInMinutes,
-                DaysOfWeek = string.Join(",", model.DaysOfWeek),
-                HealthTestId = model.HealthTestId ?? throw new ArgumentNullException(nameof(model.HealthTestId)),
-                CreatedTime = DateTimeOffset.UtcNow
-            };
+            var createdSchedules = new List<HealthTestSchedule>();
 
-            await _unitOfWork.GetRepository<HealthTestSchedule>().InsertAsync(schedule);
+            var totalMinutes = (int)(model.SlotEnd - model.SlotStart).TotalMinutes;
+
+            if (totalMinutes < model.SlotDurationInMinutes)
+            {
+                throw new ArgumentException("The time range between SlotStart and SlotEnd must be greater than or equal to SlotDurationInMinutes.");
+            }
+
+            if (totalMinutes % model.SlotDurationInMinutes != 0)
+            {
+                throw new ArgumentException("The time range must be divisible by SlotDurationInMinutes.");
+            }
+
+            for (var date = model.StartDate.Date; date <= model.EndDate.Date; date = date.AddDays(1))
+            {
+                var dayName = date.DayOfWeek.ToString().Substring(0, 3); // "Mon", "Tue", etc.
+                if (!model.DaysOfWeek.Contains(dayName)) continue;
+
+                var currentSlotStart = model.SlotStart;
+                while (currentSlotStart + TimeSpan.FromMinutes(model.SlotDurationInMinutes) <= model.SlotEnd)
+                {
+                    var slotEnd = currentSlotStart + TimeSpan.FromMinutes(model.SlotDurationInMinutes);
+
+                    var schedule = new HealthTestSchedule
+                    {
+                        Id = Guid.NewGuid().ToString(),
+                        StartDate = date,
+                        EndDate = date,
+                        SlotStart = currentSlotStart,
+                        SlotEnd = slotEnd,
+                        SlotDurationInMinutes = model.SlotDurationInMinutes,
+                        DaysOfWeek = dayName,
+                        HealthTestId = model.HealthTestId ?? throw new ArgumentNullException(nameof(model.HealthTestId)),
+                        CreatedTime = DateTimeOffset.UtcNow
+                    };
+
+                    createdSchedules.Add(schedule);
+
+                    currentSlotStart = slotEnd;
+                }
+            }
+
+            var repo = _unitOfWork.GetRepository<HealthTestSchedule>();
+            await repo.InsertRangeAsync(createdSchedules);
             await _unitOfWork.SaveAsync();
 
-            return schedule.ToHealthTestScheduleDto();
+            return createdSchedules.Select(s => s.ToHealthTestScheduleDto()).ToList();
         }
+
 
         public async Task<bool> DeleteScheduleAsync(string id)
         {
