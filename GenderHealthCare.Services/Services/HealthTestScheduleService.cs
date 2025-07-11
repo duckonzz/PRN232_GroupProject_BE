@@ -22,7 +22,6 @@ namespace GenderHealthCare.Services.Services
 
         public async Task<HealthTestScheduleResponseModel> CreateScheduleAsync(HealthTestScheduleRequestModel model)
         {
-            // Validate input
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
 
@@ -32,29 +31,23 @@ namespace GenderHealthCare.Services.Services
             if (model.SlotStart >= model.SlotEnd)
                 throw new ArgumentException("SlotEnd must be greater than SlotStart");
 
+            if (model.SlotDurationInMinutes <= 0)
+                throw new ArgumentException("SlotDurationInMinutes must be greater than zero");
+
             if (model.DaysOfWeek == null || !model.DaysOfWeek.Any())
                 throw new ArgumentException("At least one day of week must be specified");
 
-            var expectedDuration = TimeSpan.FromMinutes(model.SlotDurationInMinutes);
-            var actualDuration = model.SlotEnd - model.SlotStart;
-            var actualMinutes = (int)actualDuration.TotalMinutes;
-
-            if (actualMinutes != model.SlotDurationInMinutes)
-            {
-                throw new ArgumentException($"The duration between SlotStart and SlotEnd must be exactly {model.SlotDurationInMinutes} minutes.");
-            }
-
-            // Validate each day
             var validDays = new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
             var invalidDays = model.DaysOfWeek.Except(validDays).ToList();
             if (invalidDays.Any())
                 throw new ArgumentException($"Invalid days specified: {string.Join(", ", invalidDays)}");
 
+            var expectedDuration = TimeSpan.FromMinutes(model.SlotDurationInMinutes);
+
             var schedule = new HealthTestSchedule
             {
-                Id = Guid.NewGuid().ToString(),
-                StartDate = model.StartDate.Date, // Ensure we store only date part
-                EndDate = model.EndDate.Date,     // Ensure we store only date part
+                StartDate = model.StartDate.Date,
+                EndDate = model.EndDate.Date,
                 SlotStart = model.SlotStart,
                 SlotEnd = model.SlotEnd,
                 SlotDurationInMinutes = model.SlotDurationInMinutes,
@@ -64,6 +57,33 @@ namespace GenderHealthCare.Services.Services
             };
 
             await _unitOfWork.GetRepository<HealthTestSchedule>().InsertAsync(schedule);
+            await _unitOfWork.SaveAsync();
+
+            // ---------------- Generate TestSlots ----------------
+            var slotRepo = _unitOfWork.GetRepository<TestSlot>();
+            var slots = new List<TestSlot>();
+            var daysToGenerate = Enumerable.Range(0, (schedule.EndDate - schedule.StartDate).Days + 1)
+                .Select(offset => schedule.StartDate.AddDays(offset))
+                .Where(date => model.DaysOfWeek.Contains(date.DayOfWeek.ToString().Substring(0, 3))); // "Mon", "Tue", etc
+
+            foreach (var date in daysToGenerate)
+            {
+                var time = schedule.SlotStart;
+                while (time + expectedDuration <= schedule.SlotEnd)
+                {
+                    slots.Add(new TestSlot
+                    {
+                        TestDate = date,
+                        SlotStart = time,
+                        SlotEnd = time + expectedDuration,
+                        IsBooked = false,
+                        HealthTestId = schedule.HealthTestId
+                    });
+                    time += expectedDuration;
+                }
+            }
+
+            await slotRepo.InsertRangeAsync(slots);
             await _unitOfWork.SaveAsync();
 
             return schedule.ToHealthTestScheduleDto();
