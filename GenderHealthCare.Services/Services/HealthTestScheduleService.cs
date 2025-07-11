@@ -37,8 +37,9 @@ namespace GenderHealthCare.Services.Services
 
             var expectedDuration = TimeSpan.FromMinutes(model.SlotDurationInMinutes);
             var actualDuration = model.SlotEnd - model.SlotStart;
+            var actualMinutes = (int)actualDuration.TotalMinutes;
 
-            if (actualDuration != expectedDuration)
+            if (actualMinutes != model.SlotDurationInMinutes)
             {
                 throw new ArgumentException($"The duration between SlotStart and SlotEnd must be exactly {model.SlotDurationInMinutes} minutes.");
             }
