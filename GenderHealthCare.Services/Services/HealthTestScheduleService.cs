@@ -20,7 +20,7 @@ namespace GenderHealthCare.Services.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<HealthTestScheduleResponseModel> CreateScheduleAsync(HealthTestScheduleRequestModel model)
+        public async Task<List<HealthTestScheduleResponseModel>> CreateScheduleAsync(HealthTestScheduleRequestModel model)
         {
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
@@ -41,7 +41,7 @@ namespace GenderHealthCare.Services.Services
             var invalidDays = model.DaysOfWeek.Except(validDays).ToList();
             if (invalidDays.Any())
                 throw new ArgumentException($"Invalid days specified: {string.Join(", ", invalidDays)}");
-
+               
             var expectedDuration = TimeSpan.FromMinutes(model.SlotDurationInMinutes);
 
             var schedule = new HealthTestSchedule
@@ -88,6 +88,7 @@ namespace GenderHealthCare.Services.Services
 
             return schedule.ToHealthTestScheduleDto();
         }
+
 
         public async Task<bool> DeleteScheduleAsync(string id)
         {
