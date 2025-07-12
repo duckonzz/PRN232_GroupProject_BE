@@ -2,13 +2,13 @@
 using GenderHealthCare.Contract.Repositories.Interfaces;
 using GenderHealthCare.Contract.Services.Interfaces;
 using GenderHealthCare.Repositories.Repositories;
+using GenderHealthCare.Service;
 using GenderHealthCare.Services.Infrastructure;
 using GenderHealthCare.Services.Infrastructure.Emailing;
 using GenderHealthCare.Services.Services;
 using GenderHealthCare.Services.Validators;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
 
 namespace GenderHealthCare.Services
 {
@@ -40,6 +40,8 @@ namespace GenderHealthCare.Services
             services.AddScoped<IHealthTestScheduleService, HealthTestScheduleService>();
             services.AddScoped<IQAThreadService, QAThreadService>();
             services.AddScoped<IStatisticsService, StatisticsService>();
+            services.AddScoped<IVnPayService, VnPayService>();
+            services.AddScoped<IPaymentService, PaymentService>();
             services.AddScoped<JwtTokenGenerator>();
         }
         public static void AddRepository(this IServiceCollection services)

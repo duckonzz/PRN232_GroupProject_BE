@@ -22,6 +22,7 @@ namespace GenderHealthCare.Repositories.Base
         public DbSet<QAThread> QAThreads { get; set; }
         public DbSet<Blog> Blogs { get; set; }
         public DbSet<Report> Reports { get; set; }
+        public DbSet<Payment> Payments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
