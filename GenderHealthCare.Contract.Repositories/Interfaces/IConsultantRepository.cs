@@ -25,5 +25,6 @@ namespace GenderHealthCare.Contract.Repositories.Interfaces
         void Update(Consultant consultant);
         void Delete(Consultant consultant);
         Task SaveChangesAsync();
+
     }
 }
