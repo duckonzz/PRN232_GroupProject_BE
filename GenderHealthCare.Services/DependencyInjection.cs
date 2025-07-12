@@ -39,6 +39,7 @@ namespace GenderHealthCare.Services
             services.AddScoped<IHealthTestService, HealthTestService>();
             services.AddScoped<IHealthTestScheduleService, HealthTestScheduleService>();
             services.AddScoped<IQAThreadService, QAThreadService>();
+            services.AddScoped<IStatisticsService, StatisticsService>();
             services.AddScoped<JwtTokenGenerator>();
         }
         public static void AddRepository(this IServiceCollection services)

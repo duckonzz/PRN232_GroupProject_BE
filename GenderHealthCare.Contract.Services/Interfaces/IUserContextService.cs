@@ -5,5 +5,6 @@ namespace GenderHealthCare.Contract.Services.Interfaces
         string GetUserId();
         string? GetUserRole();
         Task<string> GetConsultantIdAsync();
+
     }
 }

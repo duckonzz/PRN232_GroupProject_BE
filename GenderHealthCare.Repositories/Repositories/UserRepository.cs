@@ -20,5 +20,20 @@ namespace GenderHealthCare.Repositories.Repositories
 
         public Task<User?> GetByIdAsync(string id) =>
             _ctx.Users.FirstOrDefaultAsync(u => u.Id == id);
+
+
+        public async Task<int> CountAllCustomersAsync()
+        {
+            return await _ctx.Users
+                .Where(u => u.Role == "Customer")
+                .CountAsync();
+        }
+
+        public async Task<int> CountBookedAvailableSlotsAsync()
+        {
+            return await _ctx.AvailableSlots
+                .Where(slot => slot.IsBooked && slot.BookedByUserId != null)
+                .CountAsync();
+        }
     }
 }
