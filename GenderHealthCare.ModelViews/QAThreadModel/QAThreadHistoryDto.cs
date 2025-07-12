@@ -10,7 +10,6 @@ namespace GenderHealthCare.ModelViews.QAThreadModel
     {
         public string Id { get; set; } = default!;
         public string CustomerId { get; set; } = default!;
-        public string ConsultantId { get; set; } = default!;
 
         public string Question { get; set; } = default!;
         public DateTimeOffset CreatedTime { get; set; }

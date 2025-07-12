@@ -167,5 +167,22 @@ namespace GenderHealthCare.Services.Services
                 Message = "Lấy lịch sử booking thành công"
             };
         }
+
+        public async Task<ServiceResponse<bool>> UpdateResultUrlAsync(string id, UpdateTestResultUrlDto dto)
+        {
+            var booking = await _ctx.TestBookings.FirstOrDefaultAsync(b => b.Id == id);
+            if (booking is null)
+                return new ServiceResponse<bool> { Success = false, Message = "TestBooking not found." };
+
+            booking.ResultUrl = dto.ResultUrl;
+            await _ctx.SaveChangesAsync();
+
+            return new ServiceResponse<bool>
+            {
+                Data = true,
+                Success = true,
+                Message = "Result URL updated successfully"
+            };
+        }
     }
 }

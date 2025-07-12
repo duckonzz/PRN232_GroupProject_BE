@@ -13,9 +13,7 @@ namespace GenderHealthCare.ModelViews.QAThreadModel
         public string? Answer { get; set; }
         public DateTimeOffset? AnsweredAt { get; set; }
         public string CustomerId { get; set; }
-        public string ConsultantId { get; set; }
         // thông tin hiển thị thêm
         public string CustomerName { get; set; }
-        public string ConsultantName { get; set; }
     }
 }

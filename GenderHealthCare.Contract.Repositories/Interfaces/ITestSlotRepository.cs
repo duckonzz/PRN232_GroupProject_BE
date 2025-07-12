@@ -18,5 +18,7 @@ namespace GenderHealthCare.Contract.Repositories.Interfaces
         Task<PaginatedList<TestSlot>> SearchAsync(DateTime? testDate, string? userId, int page, int size);
         Task<PaginatedList<TestSlot>> GetByUserAsync(
           string userId, int page, int size);
+
+        Task<int> CountBookedTestSlotsAsync();
     }
 }

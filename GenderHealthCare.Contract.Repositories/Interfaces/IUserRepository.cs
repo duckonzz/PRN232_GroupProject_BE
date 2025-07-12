@@ -11,5 +11,8 @@ namespace GenderHealthCare.Contract.Repositories.Interfaces
     {
         IQueryable<User> Query();
         Task<User?> GetByIdAsync(string id);
+        Task<int> CountAllCustomersAsync();
+
+        Task<int> CountBookedAvailableSlotsAsync();
     }
 }

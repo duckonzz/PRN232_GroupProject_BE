@@ -448,7 +448,6 @@ namespace GenderHealthCare.Repositories.Migrations
                         .HasColumnType("datetimeoffset");
 
                     b.Property<string>("ConsultantId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTimeOffset>("CreatedTime")
@@ -854,19 +853,15 @@ namespace GenderHealthCare.Repositories.Migrations
 
             modelBuilder.Entity("GenderHealthCare.Entity.QAThread", b =>
                 {
-                    b.HasOne("GenderHealthCare.Entity.Consultant", "Consultant")
+                    b.HasOne("GenderHealthCare.Entity.Consultant", null)
                         .WithMany("QAThreads")
-                        .HasForeignKey("ConsultantId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("ConsultantId");
 
                     b.HasOne("GenderHealthCare.Entity.User", "Customer")
                         .WithMany("QAThreadsAsked")
                         .HasForeignKey("CustomerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("Consultant");
 
                     b.Navigation("Customer");
                 });

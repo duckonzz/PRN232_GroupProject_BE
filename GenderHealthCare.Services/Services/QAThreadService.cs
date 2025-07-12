@@ -37,22 +37,28 @@ namespace GenderHealthCare.Services.Services
         private IQueryable<QAThread> BaseQuery() =>
             _repo.Query()
                  .Include(t => t.Customer)
-                 .Include(t => t.Consultant)
-                     .ThenInclude(c => c.User);
+                 ;
 
         /* =========================================================
            CREATE QUESTION
         ========================================================= */
         public async Task<ServiceResponse<string>> CreateQuestionAsync(CreateQuestionDto dto)
         {
-            /* Kiểm tra tồn tại User & Consultant */
+            // Kiểm tra tồn tại Customer
             if (await _userRepo.GetByIdAsync(dto.CustomerId) is null)
                 return new ServiceResponse<string> { Success = false, Message = "Customer not found." };
 
-            if (await _consultRepo.GetByIdAsync(dto.ConsultantId) is null)
-                return new ServiceResponse<string> { Success = false, Message = "Consultant not found." };
+            var entity = new QAThread
+            {
+                Id = Guid.NewGuid().ToString(),
+                Question = dto.Question,
+                CustomerId = dto.CustomerId,
+                CreatedTime = DateTimeOffset.UtcNow,
+                
+                Answer = null,
+                AnsweredAt = null
+            };
 
-            var entity = _mapper.Map<QAThread>(dto);
             await _repo.AddAsync(entity);
             await _repo.SaveChangesAsync();
 
@@ -89,11 +95,8 @@ namespace GenderHealthCare.Services.Services
         public async Task<ServiceResponse<bool>> AnswerQuestionAsync(string id, AnswerQuestionDto dto)
         {
             var thread = await _repo.GetByIdAsync(id);
-            if (thread is null)
+            if (thread == null)
                 return new ServiceResponse<bool> { Success = false, Message = "Thread not found." };
-
-            if (thread.ConsultantId != dto.ConsultantId)
-                return new ServiceResponse<bool> { Success = false, Message = "Forbidden: wrong consultant." };
 
             if (thread.Answer != null)
                 return new ServiceResponse<bool> { Success = false, Message = "Thread already answered." };
@@ -106,6 +109,7 @@ namespace GenderHealthCare.Services.Services
 
             return new ServiceResponse<bool> { Data = true, Success = true, Message = "Answered." };
         }
+
 
         /* =========================================================
            DELETE
@@ -162,13 +166,12 @@ namespace GenderHealthCare.Services.Services
            SEARCH (Paginated)
         ========================================================= */
         public async Task<ServiceResponse<PaginatedList<QAThreadDto>>> SearchAsync(
-            string? customerId,
-            string? consultantId,
-            bool? answered,
-            int page,
-            int size)
+        string? customerId,
+        bool? answered,
+        int page,
+        int size)
         {
-            var paged = await _repo.SearchAsync(customerId, consultantId, answered, page, size);
+            var paged = await _repo.SearchAsync(customerId, answered, page, size);
             var dto = paged.Items.Select(_mapper.Map<QAThreadDto>).ToList();
             var result = new PaginatedList<QAThreadDto>(dto, paged.TotalCount, page, size);
 
@@ -181,26 +184,38 @@ namespace GenderHealthCare.Services.Services
         }
 
         public async Task<ServiceResponse<PaginatedList<QAThreadHistoryDto>>>
-           GetConversationAsync(string customerId,
-                                string consultantId,
-                                int page,
-                                int size)
+         GetConversationAsync(string customerId, int page, int size)
         {
-            var paged = await _repo.GetConversationAsync(customerId, consultantId, page, size);
+            var paged = await _repo.GetConversationAsync(customerId, page, size);
+            var items = paged.Items.Select(_mapper.Map<QAThreadHistoryDto>).ToList();
 
-            var items = paged.Items
-                             .Select(_mapper.Map<QAThreadHistoryDto>)
-                             .ToList();
-
-            var result = new PaginatedList<QAThreadHistoryDto>(
-                            items, paged.TotalCount, page, size);
-
+            var result = new PaginatedList<QAThreadHistoryDto>(items, paged.TotalCount, page, size);
             return new ServiceResponse<PaginatedList<QAThreadHistoryDto>>
             {
                 Data = result,
                 Success = true,
                 Message = "Conversation retrieved."
             };
+        }
+
+        public async Task<ServiceResponse<bool>> UpdateAnswerByCustomerIdAsync(string customerId, UpdateAnswerByCustomerDto dto)
+        {
+            // Lấy thread mới nhất của customer chưa được trả lời
+            var thread = await _repo.Query()
+                .Where(t => t.CustomerId == customerId && t.Answer == null)
+                .OrderByDescending(t => t.CreatedTime)
+                .FirstOrDefaultAsync();
+
+            if (thread is null)
+                return new ServiceResponse<bool> { Success = false, Message = "No unanswered question found for this customer." };
+
+            thread.Answer = dto.Answer;
+            thread.AnsweredAt = DateTimeOffset.UtcNow;
+
+            _repo.Update(thread);
+            await _repo.SaveChangesAsync();
+
+            return new ServiceResponse<bool> { Data = true, Success = true, Message = "Answer updated." };
         }
     }
 }

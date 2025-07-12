@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace GenderHealthCare.ModelViews.QAThreadModel
 {
-    public class AnswerQuestionDto
+    public class UpdateAnswerByCustomerDto
     {
-        public string Answer { get; set; }
-        /*public string StaffUserId { get; set; } // Staff trả lời*/
+        public string Answer { get; set; } = null!;
     }
 }

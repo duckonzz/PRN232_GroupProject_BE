@@ -17,5 +17,8 @@ namespace GenderHealthCare.Contract.Services.Interfaces
 
         Task<ServiceResponse<PaginatedList<TestBookingDto>>>
             GetByUserAsync(string customerId, int page, int size);
+
+        Task<ServiceResponse<bool>> UpdateResultUrlAsync(string id, UpdateTestResultUrlDto dto);
+
     }
 }

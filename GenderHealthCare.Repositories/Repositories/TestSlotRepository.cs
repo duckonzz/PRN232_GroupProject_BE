@@ -57,5 +57,12 @@ namespace GenderHealthCare.Repositories.Repositories
 
             return await PaginatedList<TestSlot>.CreateAsync(q, page, size);
         }
+
+        public async Task<int> CountBookedTestSlotsAsync()
+        {
+            return await _context.TestSlots
+                .Where(slot => slot.IsBooked && slot.BookedByUserId != null)
+                .CountAsync();
+        }
     }
 }

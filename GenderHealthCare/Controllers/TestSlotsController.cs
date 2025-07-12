@@ -37,15 +37,11 @@ namespace GenderHealthCare.Controllers
             return result.Success ? Ok(result) : NotFound(result);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromBody] CreateTestSlotDto dto)
+        [HttpPut("{id}/booking")]
+        public async Task<IActionResult> UpdateBookingAsync(string id, [FromBody] UpdateTestSlotBookingDto dto)
         {
-            var result = await _service.CreateAsync(dto);
-            if (!result.Success) return BadRequest(result);
-
-            return CreatedAtRoute("GetTestSlotById",
-                                  new { id = result.Data },
-                                  result);
+            var result = await _service.UpdateByIdAsync(id, dto);
+            return result.Success ? Ok(result) : BadRequest(result);
         }
 
         [HttpPut("{id}")]
