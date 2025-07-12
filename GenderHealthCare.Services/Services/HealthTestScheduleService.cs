@@ -1,9 +1,12 @@
 ﻿using GenderHealthCare.Contract.Repositories.Interfaces;
 using GenderHealthCare.Contract.Services.Interfaces;
+using GenderHealthCare.Core.Constants;
+using GenderHealthCare.Core.Exceptions;
 using GenderHealthCare.Entity;
 using GenderHealthCare.ModelViews.AvailableSlotModels;
 using GenderHealthCare.ModelViews.HealthTestScheduleModels;
 using GenderHealthCare.Services.Mapping;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -41,7 +44,7 @@ namespace GenderHealthCare.Services.Services
             var invalidDays = model.DaysOfWeek.Except(validDays).ToList();
             if (invalidDays.Any())
                 throw new ArgumentException($"Invalid days specified: {string.Join(", ", invalidDays)}");
-               
+
             var expectedDuration = TimeSpan.FromMinutes(model.SlotDurationInMinutes);
 
             var schedule = new HealthTestSchedule
@@ -55,7 +58,7 @@ namespace GenderHealthCare.Services.Services
                 HealthTestId = model.HealthTestId ?? throw new ArgumentNullException(nameof(model.HealthTestId)),
             };
 
-            // ✅ Check: DaysOfWeek phải match ít nhất 1 ngày trong range
+            // ✅ Tính danh sách ngày cần sinh slot
             var daysToGenerate = Enumerable.Range(0, (schedule.EndDate - schedule.StartDate).Days + 1)
                 .Select(offset => schedule.StartDate.AddDays(offset))
                 .Where(date => model.DaysOfWeek.Contains(date.DayOfWeek.ToString().Substring(0, 3)))
@@ -63,14 +66,12 @@ namespace GenderHealthCare.Services.Services
 
             if (!daysToGenerate.Any())
             {
-                throw new InvalidOperationException(
-                    "No slots generated because DaysOfWeek do not match any days in the selected date range."
-                );
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "No slots generated because DaysOfWeek do not match any days in the selected date range.");
             }
 
-            // ✅ Check: Duplicate exact same schedule
             var scheduleRepo = _unitOfWork.GetRepository<HealthTestSchedule>();
 
+            // ✅ Check: Duplicate schedule
             bool exactSameExists = await scheduleRepo.Entities.AnyAsync(x =>
                 x.HealthTestId == schedule.HealthTestId &&
                 x.StartDate == schedule.StartDate &&
@@ -78,44 +79,37 @@ namespace GenderHealthCare.Services.Services
                 x.SlotStart == schedule.SlotStart &&
                 x.SlotEnd == schedule.SlotEnd &&
                 x.SlotDurationInMinutes == schedule.SlotDurationInMinutes &&
-                x.DaysOfWeek == schedule.DaysOfWeek
-            );
+                x.DaysOfWeek == schedule.DaysOfWeek);
 
             if (exactSameExists)
-            {
-                throw new InvalidOperationException(
-                    "A schedule with the same configuration already exists for this Health Test."
-                );
-            }
+                throw new ErrorException(StatusCodes.Status409Conflict, ResponseCodeConstants.DUPLICATE ,"A schedule with the same configuration already exists for this Health Test");
 
-            // ✅ Check: Overlapping time slot with same HealthTestId
-            bool isOverlapping = await scheduleRepo.AnyAsync(x =>
-                x.HealthTestId == schedule.HealthTestId &&
-                // Check overlapping date range
-                schedule.StartDate <= x.EndDate && schedule.EndDate >= x.StartDate &&
-                // Check overlapping slot time range
-                schedule.SlotStart < x.SlotEnd && schedule.SlotEnd > x.SlotStart &&
-                // Check overlapping DaysOfWeek
-                schedule.DaysOfWeek.Split(',').Intersect(x.DaysOfWeek.Split(',')).Any()
-            );
+            // ✅ Check: Overlapping schedule
+            var overlappingSchedules = await scheduleRepo.Entities.Where(x =>
+                    x.HealthTestId == schedule.HealthTestId &&
+                    schedule.StartDate <= x.EndDate &&
+                    schedule.EndDate >= x.StartDate &&
+                    schedule.SlotStart < x.SlotEnd &&
+                    schedule.SlotEnd > x.SlotStart)
+                .ToListAsync();
+
+            bool isOverlapping = overlappingSchedules.Any(x =>
+            {
+                var existingDays = x.DaysOfWeek.Split(',');
+                var newDays = schedule.DaysOfWeek.Split(',');
+                return existingDays.Intersect(newDays).Any();
+            });
 
             if (isOverlapping)
-            {
-                throw new InvalidOperationException(
-                    "This schedule overlaps with an existing schedule for this Health Test."
-                );
-            }
+                throw new ErrorException(StatusCodes.Status409Conflict ,ResponseCodeConstants.DUPLICATE ,"This schedule overlaps with an existing schedule for this Health Test");
 
-
-            await _unitOfWork.GetRepository<HealthTestSchedule>().InsertAsync(schedule);
+            // ✅ Save schedule
+            await scheduleRepo.InsertAsync(schedule);
             await _unitOfWork.SaveAsync();
 
-            // ---------------- Generate TestSlots ----------------
+            // ✅ Generate TestSlots
             var slotRepo = _unitOfWork.GetRepository<TestSlot>();
             var slots = new List<TestSlot>();
-            var daysToGenerate = Enumerable.Range(0, (schedule.EndDate - schedule.StartDate).Days + 1)
-                .Select(offset => schedule.StartDate.AddDays(offset))
-                .Where(date => model.DaysOfWeek.Contains(date.DayOfWeek.ToString().Substring(0, 3))); // "Mon", "Tue", etc
 
             foreach (var date in daysToGenerate)
             {
@@ -139,6 +133,7 @@ namespace GenderHealthCare.Services.Services
 
             return schedule.ToHealthTestScheduleDto();
         }
+
 
 
         public async Task<bool> DeleteScheduleAsync(string id)
