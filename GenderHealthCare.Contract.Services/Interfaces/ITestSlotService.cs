@@ -18,5 +18,7 @@ namespace GenderHealthCare.Contract.Services.Interfaces
 
         Task<ServiceResponse<PaginatedList<TestSlotDto>>>
             GetByUserAsync(string userId, int page, int size);
+        Task<ServiceResponse<bool>> UpdateStatus(string id);
+
     }
 }
