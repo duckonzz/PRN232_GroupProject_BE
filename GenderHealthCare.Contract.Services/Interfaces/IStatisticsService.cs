@@ -1,10 +1,5 @@
 ﻿using GenderHealthCare.Core.Helpers;
 using GenderHealthCare.ModelViews.StatisticsModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace GenderHealthCare.Contract.Services.Interfaces
 {
@@ -12,6 +7,8 @@ namespace GenderHealthCare.Contract.Services.Interfaces
     {
         Task<ServiceResponse<UserStatisticsResultDto>> CountAllCustomersAsync();
         Task<ServiceResponse<TestSlotStatisticsResultDto>> CountBookedTestSlotsAsync();
-        Task<ServiceResponse<AvailableSlotStatisticsResultDto>> CountBookedAvailableSlotsAsync(); 
+        Task<ServiceResponse<AvailableSlotStatisticsResultDto>> CountBookedAvailableSlotsAsync();
+        Task<List<MonthlyStatisticResponse>> GetConsultationStatisticsAsync(StatisticFilterRequest request);
+        Task<List<MonthlyStatisticResponse>> GetTestBookingStatisticsAsync(StatisticFilterRequest request);
     }
 }
