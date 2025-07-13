@@ -8,9 +8,9 @@ namespace GenderHealthCare.Services.Validators
         public CycleTrackingRequestValidator()
         {
             RuleFor(x => x.StartDate)
-                .NotEmpty().WithMessage("Start date is required")
-                .GreaterThanOrEqualTo(DateTime.UtcNow.Date.AddYears(-1)).WithMessage("Start date must not be too far in the past")
-                .LessThanOrEqualTo(DateTime.UtcNow.Date).WithMessage("Start date must not be in the future");
+            .NotEmpty().WithMessage("Start date is required")
+            .LessThanOrEqualTo(DateTime.UtcNow.Date.AddDays(1)).WithMessage("Start date must not be in the future (only up to tomorrow)")
+            .GreaterThanOrEqualTo(DateTime.UtcNow.Date.AddYears(-1)).WithMessage("Start date must not be too far in the past");
 
             RuleFor(x => x.CycleLength)
                 .GreaterThan(20).WithMessage("Cycle length must be at least 21 days")
