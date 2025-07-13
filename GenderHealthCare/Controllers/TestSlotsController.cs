@@ -67,5 +67,12 @@ namespace GenderHealthCare.Controllers
             var result = await _service.GetByUserAsync(userId, page, size);
             return result.Success ? Ok(result) : BadRequest(result);
         }
+        [HttpPatch("{id}/updateStatus")]
+        public async Task<IActionResult> MarkAsBookedAsync(string id)
+        {
+            var result = await _service.UpdateStatus(id);
+            return result.Success ? Ok(result) : BadRequest(result);
+        }
+
     }
 }

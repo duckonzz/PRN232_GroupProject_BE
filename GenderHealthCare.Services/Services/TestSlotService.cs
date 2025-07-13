@@ -50,7 +50,7 @@ namespace GenderHealthCare.Services.Services
             try
             {
                 // Cập nhật trạng thái booking
-                slot.IsBooked = dto.BookedByUserId != null;
+                slot.IsBooked = false;
                 slot.BookedByUserId = dto.BookedByUserId;
                 slot.BookedAt = dto.BookedByUserId != null ? DateTimeOffset.UtcNow : null;
 
@@ -290,6 +290,26 @@ namespace GenderHealthCare.Services.Services
                 Data = result,
                 Success = true,
                 Message = "Lấy danh sách slot của user thành công"
+            };
+        }
+
+        public async Task<ServiceResponse<bool>> UpdateStatus(string id)
+        {
+            var slot = await _repo.GetByIdAsync(id);
+            if (slot == null)
+                return new ServiceResponse<bool> { Success = false, Message = "Test slot not found." };
+
+            if (slot.IsBooked)
+                return new ServiceResponse<bool> { Success = false, Message = "Slot is already marked as booked." };
+
+            slot.IsBooked = true;
+            await _repo.SaveChangesAsync();
+
+            return new ServiceResponse<bool>
+            {
+                Data = true,
+                Success = true,
+                Message = "Slot marked as booked successfully."
             };
         }
     }
