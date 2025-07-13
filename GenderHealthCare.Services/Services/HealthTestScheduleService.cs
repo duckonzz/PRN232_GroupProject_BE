@@ -229,21 +229,120 @@ namespace GenderHealthCare.Services.Services
 
         public async Task<bool> UpdateScheduleAsync(string id, HealthTestScheduleRequestModel model)
         {
-            var scheduleRepo = _unitOfWork.GetRepository<HealthTestSchedule>();
-            var schedule = await scheduleRepo.GetByIdAsync(id);
+            if (model == null)
+                throw new ArgumentNullException(nameof(model));
 
+            if (model.StartDate > model.EndDate)
+                throw new ArgumentException("EndDate must be greater than StartDate");
+
+            if (model.SlotStart >= model.SlotEnd)
+                throw new ArgumentException("SlotEnd must be greater than SlotStart");
+
+            if (model.SlotDurationInMinutes <= 0)
+                throw new ArgumentException("SlotDurationInMinutes must be greater than zero");
+
+            if (model.DaysOfWeek == null || !model.DaysOfWeek.Any())
+                throw new ArgumentException("At least one day of week must be specified");
+
+            var validDays = new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+            var invalidDays = model.DaysOfWeek.Except(validDays).ToList();
+            if (invalidDays.Any())
+                throw new ArgumentException($"Invalid days specified: {string.Join(", ", invalidDays)}");
+
+            var scheduleRepo = _unitOfWork.GetRepository<HealthTestSchedule>();
+            var slotRepo = _unitOfWork.GetRepository<TestSlot>();
+
+            var schedule = await scheduleRepo.GetByIdAsync(id);
             if (schedule == null) return false;
 
-            schedule.StartDate = model.StartDate;
-            schedule.EndDate = model.EndDate;
+            var expectedDuration = TimeSpan.FromMinutes(model.SlotDurationInMinutes);
+
+            // ✅ Check duplicate (excluding current schedule)
+            bool duplicateExists = await scheduleRepo.Entities.AnyAsync(x =>
+                x.Id != id &&
+                x.HealthTestId == model.HealthTestId &&
+                x.StartDate == model.StartDate &&
+                x.EndDate == model.EndDate &&
+                x.SlotStart == model.SlotStart &&
+                x.SlotEnd == model.SlotEnd &&
+                x.SlotDurationInMinutes == model.SlotDurationInMinutes &&
+                string.Join(",", model.DaysOfWeek) == x.DaysOfWeek);
+
+            if (duplicateExists)
+                throw new ErrorException(StatusCodes.Status409Conflict, ResponseCodeConstants.DUPLICATE, "A schedule with the same configuration already exists for this Health Test");
+
+            // ✅ Check overlapping
+            var overlappingSchedules = await scheduleRepo.Entities.Where(x =>
+                x.Id != id &&
+                x.HealthTestId == model.HealthTestId &&
+                model.StartDate <= x.EndDate &&
+                model.EndDate >= x.StartDate &&
+                model.SlotStart < x.SlotEnd &&
+                model.SlotEnd > x.SlotStart)
+            .ToListAsync();
+
+            bool isOverlapping = overlappingSchedules.Any(x =>
+            {
+                var existingDays = x.DaysOfWeek.Split(',');
+                var newDays = model.DaysOfWeek;
+                return existingDays.Intersect(newDays).Any();
+            });
+
+            if (isOverlapping)
+                throw new ErrorException(StatusCodes.Status409Conflict, ResponseCodeConstants.DUPLICATE, "This schedule overlaps with an existing schedule for this Health Test");
+
+            // ✅ Update schedule
+            schedule.StartDate = model.StartDate.Date;
+            schedule.EndDate = model.EndDate.Date;
             schedule.SlotStart = model.SlotStart;
             schedule.SlotEnd = model.SlotEnd;
             schedule.SlotDurationInMinutes = model.SlotDurationInMinutes;
-            schedule.DaysOfWeek = model.DaysOfWeek != null ? string.Join(",", model.DaysOfWeek) : "";
-            schedule.HealthTestId = model.HealthTestId;
+            schedule.DaysOfWeek = string.Join(",", model.DaysOfWeek);
+            schedule.HealthTestId = model.HealthTestId ?? throw new ArgumentNullException(nameof(model.HealthTestId));
 
             scheduleRepo.Update(schedule);
             await _unitOfWork.SaveAsync();
+
+            // ✅ Xoá tất cả TestSlot cũ liên quan đến schedule này (theo HealthTestId và thời gian)
+            var slotsToDelete = await slotRepo.Entities
+                .Where(x => x.HealthTestId == schedule.HealthTestId &&
+                            x.TestDate >= schedule.StartDate &&
+                            x.TestDate <= schedule.EndDate)
+                .ToListAsync();
+
+            slotRepo.DeleteRange(slotsToDelete);
+            await _unitOfWork.SaveAsync();
+
+            // ✅ Generate lại TestSlot mới
+            var daysToGenerate = Enumerable.Range(0, (schedule.EndDate - schedule.StartDate).Days + 1)
+                .Select(offset => schedule.StartDate.AddDays(offset))
+                .Where(date => model.DaysOfWeek.Contains(date.DayOfWeek.ToString().Substring(0, 3)))
+                .ToList();
+
+            if (!daysToGenerate.Any())
+                throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "No slots generated because DaysOfWeek do not match any days in the selected date range.");
+
+            var newSlots = new List<TestSlot>();
+            foreach (var date in daysToGenerate)
+            {
+                var time = schedule.SlotStart;
+                while (time + expectedDuration <= schedule.SlotEnd)
+                {
+                    newSlots.Add(new TestSlot
+                    {
+                        TestDate = date,
+                        SlotStart = time,
+                        SlotEnd = time + expectedDuration,
+                        IsBooked = false,
+                        HealthTestId = schedule.HealthTestId
+                    });
+                    time += expectedDuration;
+                }
+            }
+
+            await slotRepo.InsertRangeAsync(newSlots);
+            await _unitOfWork.SaveAsync();
+
             return true;
         }
     }
