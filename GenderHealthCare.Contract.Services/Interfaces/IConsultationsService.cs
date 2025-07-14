@@ -10,6 +10,6 @@ namespace GenderHealthCare.Contract.Services.Interfaces
         Task UpdateConsultationResultAsync(string consultantId, string consultationId, string result);
         Task<ConsultationResponse> CreateBookingConsultationAsync(string userId, ConsultationRequest request);
         Task<BasePaginatedList<ConsultationResponse>> GetPagedConsultationsAsync(ConsultationQueryObject query);
-        Task CancelConsultationAsync(string userId, string consultationId, string? reason, string role);
+        Task CancelConsultationAsync(string consultationId, string? reason);
     }
 }

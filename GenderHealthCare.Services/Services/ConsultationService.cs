@@ -24,33 +24,30 @@ namespace GenderHealthCare.Services.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task CancelConsultationAsync(string userId, string consultationId, string? reason, string role)
+        public async Task CancelConsultationAsync( string consultationId, string? reason)
         {
             var consultationRepo = _unitOfWork.GetRepository<Consultation>();
             var consultation = await consultationRepo.Entities
                 .Include(c => c.Slot)
-                .FirstOrDefaultAsync(c => c.Id == consultationId && !c.DeletedTime.HasValue) ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Consultation not found or deleted");
+                .Include(c => c.Consultant)
+                    .ThenInclude(c => c.User)
+                .FirstOrDefaultAsync(c => c.Id == consultationId && !c.DeletedTime.HasValue)
+                ?? throw new ErrorException(StatusCodes.Status404NotFound, ResponseCodeConstants.NOT_FOUND, "Consultation not found or deleted");
 
-            if(consultation.Status != ConsultationStatus.Pending.ToString() && consultation.Status != ConsultationStatus.Confirmed.ToString())
+            // Chỉ cho phép huỷ nếu trạng thái còn Pending hoặc Confirmed
+            if (consultation.Status != ConsultationStatus.Pending.ToString() &&
+                consultation.Status != ConsultationStatus.Confirmed.ToString())
             {
                 throw new ErrorException(StatusCodes.Status400BadRequest, ResponseCodeConstants.BADREQUEST, "Only pending or confirmed consultations can be cancelled");
             }
 
-            var isCustomer = role.Equals(Role.Customer.ToString(), StringComparison.OrdinalIgnoreCase) && consultation.UserId == userId;
-            var isConsultant = role.Equals(Role.Consultant.ToString(), StringComparison.OrdinalIgnoreCase) && consultation.ConsultantId == userId;
-
-            if (!isCustomer && !isConsultant)
-            {
-                throw new ErrorException(StatusCodes.Status403Forbidden, ResponseCodeConstants.FORBIDDEN, "You do not have permission to cancel this consultation");
-            }
-
+            // Cập nhật trạng thái & lý do
             consultation.Status = ConsultationStatus.Cancelled.ToString();
             consultation.LastUpdatedTime = CoreHelper.SystemTimeNow;
 
-            // Optional: thêm Notes = reason nếu cần lưu lý do
             if (!string.IsNullOrWhiteSpace(reason))
             {
-                consultation.Reason += $" (Cancelled: {reason.Trim()})";
+                consultation.Reason = $"Cancelled: {reason.Trim()}";
             }
 
             // Mở lại slot
@@ -64,6 +61,7 @@ namespace GenderHealthCare.Services.Services
             consultationRepo.Update(consultation);
             await _unitOfWork.SaveAsync();
         }
+
 
         public async Task ConfirmConsultationAsync(string consultantId, string consultationId)
         {
