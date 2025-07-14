@@ -48,11 +48,6 @@ namespace GenderHealthCare.Repositories.EntityConfiguration
                    .HasDefaultValue(false);
 
             // Relationships
-
-            builder.HasOne(u => u.ConsultantProfile)
-                   .WithOne(c => c.User)
-                   .HasForeignKey<Consultant>(c => c.UserId);
-
             builder.HasMany(u => u.Consultations)
                    .WithOne(c => c.User)
                    .HasForeignKey(c => c.UserId);

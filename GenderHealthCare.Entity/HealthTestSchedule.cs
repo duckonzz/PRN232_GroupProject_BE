@@ -12,8 +12,8 @@ namespace GenderHealthCare.Entity
 
         public string DaysOfWeek { get; set; } // CSV: "Mon,Wed,Fri"
         public string HealthTestId { get; set; }
-
-
         public HealthTest HealthTest { get; set; }
+
+        public ICollection<TestSlot> TestSlots { get; set; }
     }
 }

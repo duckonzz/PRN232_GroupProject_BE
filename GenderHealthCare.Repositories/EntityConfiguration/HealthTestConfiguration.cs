@@ -22,11 +22,6 @@ namespace GenderHealthCare.Repositories.EntityConfiguration
             builder.Property(x => x.Price)
                    .IsRequired()
                    .HasColumnType("decimal(18,2)");
-
-            builder.HasMany(x => x.Slots)
-                   .WithOne(s => s.HealthTest)
-                   .HasForeignKey(s => s.HealthTestId)
-                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
