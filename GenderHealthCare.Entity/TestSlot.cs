@@ -15,6 +15,7 @@ namespace GenderHealthCare.Entity
         public string HealthTestScheduleId { get; set; }
         public HealthTestSchedule Schedule { get; set; }
         public User? BookedByUser { get; set; }
+        public Payment Payment { get; set; }
         public ICollection<TestBooking> TestBookings { get; set; }
     }
 }

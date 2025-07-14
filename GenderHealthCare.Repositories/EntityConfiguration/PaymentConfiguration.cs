@@ -23,6 +23,17 @@ namespace GenderHealthCare.Repositories.EntityConfiguration
             builder.Property(p => p.SecureHash).HasMaxLength(512);
             builder.Property(p => p.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
             builder.Property(p => p.IsSuccess).HasDefaultValue(false);
+
+            builder.HasOne(p => p.User)
+               .WithMany(u => u.Payments)
+               .HasForeignKey(p => p.UserId)
+               .OnDelete(DeleteBehavior.Restrict);
+
+            // Quan hệ 1-1 với TestSlot
+            builder.HasOne(p => p.TestSlot)
+                   .WithOne(ts => ts.Payment)
+                   .HasForeignKey<Payment>(p => p.ServiceId)
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
