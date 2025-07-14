@@ -19,6 +19,10 @@ namespace GenderHealthCare.Controllers
             _userContextService = userContextService;
         }
 
+        /// <summary>
+        /// Get all payments made by the current user.
+        /// </summary>
+        /// <returns>List of the user's payment transactions.</returns>
         [HttpGet("my-payments")]
         [Authorize(Roles = "Customer")]
         public async Task<IActionResult> GetMyPayments()

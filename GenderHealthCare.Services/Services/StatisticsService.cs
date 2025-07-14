@@ -125,6 +125,67 @@ namespace GenderHealthCare.Services.Services
                 .ToList();
         }
 
+        public async Task<RevenueStatisticsResponse> GetRevenueStatisticsAsync(DateTime? fromDate, DateTime? toDate)
+        {
+            var query = _unitOfWork.GetRepository<Payment>().Entities
+                .Include(p => p.TestSlot)
+                    .ThenInclude(ts => ts.Schedule)
+                    .ThenInclude(sch => sch.HealthTest)
+                .AsQueryable();
+
+            if (fromDate.HasValue)
+                query = query.Where(p => p.CreatedAt >= fromDate.Value.Date);
+
+            if (toDate.HasValue)
+                query = query.Where(p => p.CreatedAt <= toDate.Value.Date.AddDays(1).AddTicks(-1));
+
+            var successfulPayments = query
+                .Where(p => p.IsSuccess && p.TransactionStatus == "00" && p.ResponseCode == "00");
+
+            var totalRevenue = await successfulPayments.SumAsync(p => (long?)p.Amount) ?? 0;
+            var totalTransactions = await query.CountAsync();
+            var successfulTransactions = await successfulPayments.CountAsync();
+            var failedTransactions = totalTransactions - successfulTransactions;
+
+            // Group theo HealthTestId & HealthTest.Name
+            var revenueByHealthTest = await successfulPayments
+                .GroupBy(p => new
+                {
+                    p.TestSlot.HealthTestId,
+                    p.TestSlot.Schedule.HealthTest.Name
+                })
+                .Select(g => new ServiceRevenueItem
+                {
+                    HealthTestId = g.Key.HealthTestId,
+                    HealthTestName = g.Key.Name,
+                    TotalRevenue = g.Sum(p => p.Amount),
+                    TransactionCount = g.Count()
+                })
+                .ToListAsync();
+
+            var revenueByMonth = await successfulPayments
+                .GroupBy(p => new { p.CreatedAt.Year, p.CreatedAt.Month })
+                .Select(g => new MonthlyRevenueItem
+                {
+                    Year = g.Key.Year,
+                    Month = g.Key.Month,
+                    TotalRevenue = g.Sum(x => x.Amount)
+                }).ToListAsync();
+
+
+            return new RevenueStatisticsResponse
+            {
+                TotalRevenue = totalRevenue,
+                TotalTransactions = totalTransactions,
+                SuccessfulTransactions = successfulTransactions,
+                FailedTransactions = failedTransactions,
+                FromDate = fromDate,
+                ToDate = toDate,
+                RevenueByService = revenueByHealthTest,
+                RevenueByMonth = revenueByMonth
+            };
+        }
+
 
         // Shared
         private void ValidateRequest(StatisticFilterRequest request)
