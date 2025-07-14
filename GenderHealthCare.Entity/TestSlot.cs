@@ -12,7 +12,8 @@ namespace GenderHealthCare.Entity
         public DateTimeOffset? BookedAt { get; set; }
         public string HealthTestId { get; set; }
 
-        public HealthTest HealthTest { get; set; }
+        public string HealthTestScheduleId { get; set; }
+        public HealthTestSchedule Schedule { get; set; }
         public User? BookedByUser { get; set; }
         public ICollection<TestBooking> TestBookings { get; set; }
     }

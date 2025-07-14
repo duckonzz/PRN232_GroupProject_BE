@@ -8,10 +8,6 @@ using GenderHealthCare.ModelViews.HealthTestScheduleModels;
 using GenderHealthCare.Services.Mapping;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace GenderHealthCare.Services.Services
 {
@@ -122,7 +118,8 @@ namespace GenderHealthCare.Services.Services
                         SlotStart = time,
                         SlotEnd = time + expectedDuration,
                         IsBooked = false,
-                        HealthTestId = schedule.HealthTestId
+                        HealthTestId = schedule.HealthTestId,
+                        HealthTestScheduleId = schedule.Id
                     });
                     time += expectedDuration;
                 }
@@ -305,9 +302,7 @@ namespace GenderHealthCare.Services.Services
 
             // ✅ Xoá tất cả TestSlot cũ liên quan đến schedule này (theo HealthTestId và thời gian)
             var slotsToDelete = await slotRepo.Entities
-                .Where(x => x.HealthTestId == schedule.HealthTestId &&
-                            x.TestDate >= schedule.StartDate &&
-                            x.TestDate <= schedule.EndDate)
+                .Where(x => x.HealthTestScheduleId == schedule.Id)
                 .ToListAsync();
 
             slotRepo.DeleteRange(slotsToDelete);
@@ -334,7 +329,8 @@ namespace GenderHealthCare.Services.Services
                         SlotStart = time,
                         SlotEnd = time + expectedDuration,
                         IsBooked = false,
-                        HealthTestId = schedule.HealthTestId
+                        HealthTestId = schedule.HealthTestId,
+                        HealthTestScheduleId = schedule.Id
                     });
                     time += expectedDuration;
                 }

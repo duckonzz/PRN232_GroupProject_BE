@@ -1,6 +1,7 @@
 ﻿using GenderHealthCare.Core.Config;
 using GenderHealthCare.Entity;
 using GenderHealthCare.ModelViews.AuthenticationModels;
+using GenderHealthCare.Services.Mapping;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -39,17 +40,7 @@ namespace GenderHealthCare.Services.Infrastructure
             return new AuthenticationModel
             {
                 accessToken = new JwtSecurityTokenHandler().WriteToken(token),
-                UserResponse = new UserResponseModel
-                {
-                    Id = user.Id,
-                    Email = user.Email,
-                    FullName = user.FullName,
-                    PhoneNumber = user.PhoneNumber,
-                    DateOfBirth = user.DateOfBirth,
-                    Role = user.Role,
-                    IsCycleTrackingOn = user.IsCycleTrackingOn,
-                    CreatedTime = user.CreatedTime
-                }
+                UserResponse = user.ToUserDto()
             };
         }
     }

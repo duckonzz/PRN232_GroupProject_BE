@@ -34,10 +34,13 @@ namespace GenderHealthCare.Repositories.EntityConfiguration
             builder.Property(x => x.HealthTestId)
                    .IsRequired();
 
-            builder.HasOne(x => x.HealthTest)
-                   .WithMany(h => h.Slots)
-                   .HasForeignKey(x => x.HealthTestId)
-                   .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.HealthTestScheduleId)
+                   .IsRequired();
+
+            builder.HasOne(s => s.Schedule)
+                .WithMany(ht => ht.TestSlots)
+                .HasForeignKey(s => s.HealthTestScheduleId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne(x => x.BookedByUser)
                    .WithMany(u => u.TestSlotsBooked)

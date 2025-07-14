@@ -687,6 +687,10 @@ namespace GenderHealthCare.Repositories.Migrations
 
                     b.Property<string>("HealthTestId")
                         .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("HealthTestScheduleId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("IsBooked")
@@ -710,7 +714,7 @@ namespace GenderHealthCare.Repositories.Migrations
 
                     b.HasIndex("BookedByUserId");
 
-                    b.HasIndex("HealthTestId");
+                    b.HasIndex("HealthTestScheduleId");
 
                     b.ToTable("TestSlots", (string)null);
                 });
@@ -973,15 +977,15 @@ namespace GenderHealthCare.Repositories.Migrations
                         .HasForeignKey("BookedByUserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("GenderHealthCare.Entity.HealthTest", "HealthTest")
-                        .WithMany("Slots")
-                        .HasForeignKey("HealthTestId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                    b.HasOne("GenderHealthCare.Entity.HealthTestSchedule", "Schedule")
+                        .WithMany("TestSlots")
+                        .HasForeignKey("HealthTestScheduleId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("BookedByUser");
 
-                    b.Navigation("HealthTest");
+                    b.Navigation("Schedule");
                 });
 
             modelBuilder.Entity("GenderHealthCare.Entity.AvailableSlot", b =>
@@ -1011,8 +1015,11 @@ namespace GenderHealthCare.Repositories.Migrations
             modelBuilder.Entity("GenderHealthCare.Entity.HealthTest", b =>
                 {
                     b.Navigation("HealthTestSchedules");
+                });
 
-                    b.Navigation("Slots");
+            modelBuilder.Entity("GenderHealthCare.Entity.HealthTestSchedule", b =>
+                {
+                    b.Navigation("TestSlots");
                 });
 
             modelBuilder.Entity("GenderHealthCare.Entity.ReproductiveCycle", b =>
