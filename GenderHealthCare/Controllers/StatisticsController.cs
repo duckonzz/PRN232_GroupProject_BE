@@ -1,4 +1,5 @@
 ﻿using GenderHealthCare.Contract.Services.Interfaces;
+using GenderHealthCare.Core.Models;
 using GenderHealthCare.ModelViews.StatisticsModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -7,7 +8,7 @@ namespace GenderHealthCare.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [Authorize("Admin")]
+    [Authorize(Roles = "Admin")]
     public class StatisticsController : ControllerBase
     {
         private readonly IStatisticsService _service;
@@ -65,6 +66,19 @@ namespace GenderHealthCare.Controllers
         {
             var result = await _service.GetTestBookingStatisticsAsync(request);
             return Ok(result);
+        }
+
+        /// <summary>
+        /// Get total revenue and transaction count in a date range
+        /// </summary>
+        /// <param name="fromDate">Start date (optional).</param>
+        /// <param name="toDate">End date (optional).</param>
+        /// <returns>Revenue stats for successful payments.</returns>
+        [HttpGet("statistics/revenue")]
+        public async Task<IActionResult> GetRevenueStatistics([FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate)
+        {
+            var result = await _service.GetRevenueStatisticsAsync(fromDate, toDate);
+            return Ok(BaseResponseModel<RevenueStatisticsResponse>.OkDataResponse(result, "Revenue statistics fetched successfully"));
         }
     }
 }

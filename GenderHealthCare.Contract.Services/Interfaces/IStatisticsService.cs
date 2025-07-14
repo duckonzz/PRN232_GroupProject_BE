@@ -10,5 +10,6 @@ namespace GenderHealthCare.Contract.Services.Interfaces
         Task<ServiceResponse<AvailableSlotStatisticsResultDto>> CountBookedAvailableSlotsAsync();
         Task<List<MonthlyStatisticResponse>> GetConsultationStatisticsAsync(StatisticFilterRequest request);
         Task<List<MonthlyStatisticResponse>> GetTestBookingStatisticsAsync(StatisticFilterRequest request);
+        Task<RevenueStatisticsResponse> GetRevenueStatisticsAsync(DateTime? fromDate, DateTime? toDate);
     }
 }
