@@ -9,5 +9,6 @@ namespace GenderHealthCare.ModelViews.TestBookingModels
     public class UpdateTestResultUrlDto
     {
         public string ResultUrl { get; set; } = null!;
+
     }
 }

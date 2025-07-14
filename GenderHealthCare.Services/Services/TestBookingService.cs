@@ -127,15 +127,48 @@ namespace GenderHealthCare.Services.Services
 
         public async Task<ServiceResponse<PaginatedList<TestBookingDto>>> GetAllAsync(int page, int size)
         {
-            var q = _repo.Query().OrderByDescending(t => t.CreatedTime);
+            var q = _repo.Query()
+                .Include(t => t.Customer)
+                .Include(t => t.Slot)
+                    .ThenInclude(slot => slot.Schedule)
+                        .ThenInclude(schedule => schedule.HealthTest)
+                .OrderByDescending(t => t.CreatedTime);
+
             var paged = await PaginatedList<TestBooking>.CreateAsync(q, page, size);
+
             var result = new PaginatedList<TestBookingDto>(
-                            paged.Items.Select(_mapper.Map<TestBookingDto>).ToList(),
-                            paged.TotalCount, page, size);
+                paged.Items.Select(t => new TestBookingDto
+                {
+                    Id = t.Id,
+                    Status = t.Status,
+                    ResultUrl = t.ResultUrl,
+                    SlotId = t.SlotId,
+                    CustomerId = t.CustomerId,
+
+                    // User Info
+                    CustomerName = t.Customer?.FullName,
+                    CustomerPhone = t.Customer?.PhoneNumber,
+                    CustomerEmail = t.Customer?.Email,
+
+                    // HealthTest Info
+                    HealthTestId = t.Slot?.Schedule?.HealthTest?.Id,
+                    HealthTestName = t.Slot?.Schedule?.HealthTest?.Name,
+                    HealthTestPrice = t.Slot?.Schedule?.HealthTest?.Price,
+
+                    // Booking date
+                    TestDate = t.Slot.TestDate
+                }).ToList(),
+                paged.TotalCount, page, size
+            );
 
             return new ServiceResponse<PaginatedList<TestBookingDto>>
-            { Data = result, Success = true, Message = "Test bookings retrieved successfully" };
+            {
+                Data = result,
+                Success = true,
+                Message = "Test bookings retrieved successfully"
+            };
         }
+
 
         public async Task<ServiceResponse<PaginatedList<TestBookingDto>>> SearchAsync(
             string? status, string? customerId, int page, int size)
@@ -175,6 +208,7 @@ namespace GenderHealthCare.Services.Services
                 return new ServiceResponse<bool> { Success = false, Message = "TestBooking not found." };
 
             booking.ResultUrl = dto.ResultUrl;
+            booking.Status = TestBookingStatus.Completed.ToString();
             await _ctx.SaveChangesAsync();
 
             return new ServiceResponse<bool>
