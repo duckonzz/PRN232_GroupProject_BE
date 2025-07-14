@@ -14,6 +14,7 @@ namespace GenderHealthCare.Services.Mapping
                 Email = userModel.Email,
                 PhoneNumber = userModel.PhoneNumber,
                 DateOfBirth = userModel.DateOfBirth,
+                Gender = userModel.Gender,
                 Role = userModel.Role,
                 IsCycleTrackingOn = userModel.IsCycleTrackingOn,
                 CreatedTime = userModel.CreatedTime,
