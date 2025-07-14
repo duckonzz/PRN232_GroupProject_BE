@@ -45,7 +45,7 @@ namespace GenderHealthCare.Services.Services
             try
             {
                 // Cập nhật trạng thái booking
-                slot.IsBooked = false;
+                slot.IsBooked = true;
                 slot.BookedByUserId = dto.BookedByUserId;
                 slot.BookedAt = dto.BookedByUserId != null ? DateTimeOffset.UtcNow : null;
 
@@ -94,7 +94,7 @@ namespace GenderHealthCare.Services.Services
 
         /* ---------------- UPDATE ---------------- */
         public async Task<ServiceResponse<bool>>
-    UpdateAsync(string id, UpdateTestSlotDto dto)
+        UpdateAsync(string id, UpdateTestSlotDto dto)
         {
             /* 0. Lấy slot hiện tại */
             var slot = await _repo.GetByIdAsync(id);
