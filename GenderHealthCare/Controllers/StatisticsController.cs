@@ -7,7 +7,7 @@ namespace GenderHealthCare.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    [AllowAnonymous]
+    [Authorize("Admin")]
     public class StatisticsController : ControllerBase
     {
         private readonly IStatisticsService _service;

@@ -24,6 +24,7 @@ namespace GenderHealthCare.Entity
         public ICollection<CycleNotification> CycleNotifications { get; set; }
         public ICollection<QAThread> QAThreadsAsked { get; set; }
         public ICollection<Blog> Blogs { get; set; }
+        public ICollection<Payment> Payments { get; set; }
         public ICollection<Report> Reports { get; set; }
     }
 }

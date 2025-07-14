@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using GenderHealthCare.ModelViews.PaymentModels;
 using GenderHealthCare.ModelViews.VNPayModels;
 
 namespace GenderHealthCare.Contract.Services.Interfaces
@@ -10,6 +6,6 @@ namespace GenderHealthCare.Contract.Services.Interfaces
     public interface IPaymentService
     {
         Task SaveVnPayResultAsync(VnPayCallbackRequest request);
-
+        Task<List<PaymentResponseModel>> GetUserPaymentsAsync(string userId);
     }
 }
